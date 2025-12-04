@@ -27,11 +27,11 @@ document.addEventListener('DOMContentLoaded', async function() {
     // 載入側邊欄配置
     await loadSidebarConfig();
     
-    // 載入表單欄位配置
-    await loadFormFieldsConfig();
-    
-    // 載入欄位模板
+    // 先載入欄位模板（表單欄位渲染需要模板）
     await loadFieldTemplates();
+    
+    // 載入表單欄位配置（會調用 renderFormFields，此時模板已載入）
+    await loadFormFieldsConfig();
     
     // 綁定表單提交事件
     document.getElementById('sidebarForm').addEventListener('submit', handleSidebarSubmit);
