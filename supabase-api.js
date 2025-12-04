@@ -572,20 +572,36 @@ async function addUserPoints(authorName, points = 1) {
 }
 
 // 取得用戶知識積分
-async function getUserPoints(authorName) {
+// 參數可以是 username 或 name（為了向後兼容）
+async function getUserPoints(usernameOrName) {
     try {
         const client = initSupabase();
         if (!client) {
             // 使用 localStorage 作為備援
             const users = JSON.parse(localStorage.getItem('users') || '{}');
-            return users[authorName]?.points || 0;
+            return users[usernameOrName]?.points || 0;
         }
 
-        const { data, error } = await client
+        // 先嘗試用 username 查詢（新系統）
+        let { data, error } = await client
             .from('users')
             .select('points')
-            .eq('name', authorName)
+            .eq('username', usernameOrName)
             .single();
+
+        // 如果找不到，嘗試用 name 查詢（舊系統兼容）
+        if (error && error.code === 'PGRST116') {
+            const { data: nameData, error: nameError } = await client
+                .from('users')
+                .select('points')
+                .eq('name', usernameOrName)
+                .single();
+            
+            if (!nameError && nameData) {
+                data = nameData;
+                error = null;
+            }
+        }
 
         if (error) {
             if (error.code === 'PGRST116') {
@@ -600,7 +616,7 @@ async function getUserPoints(authorName) {
         console.error('取得用戶積分失敗:', error);
         // 使用 localStorage 作為備援
         const users = JSON.parse(localStorage.getItem('users') || '{}');
-        return users[authorName]?.points || 0;
+        return users[usernameOrName]?.points || 0;
     }
 }
 

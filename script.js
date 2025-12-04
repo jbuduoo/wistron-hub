@@ -601,11 +601,24 @@ function setupSort() {
 // 載入用戶知識積分
 async function loadUserPoints() {
     try {
-        // 從 localStorage 取得當前用戶名稱
-        const currentAuthor = localStorage.getItem('currentAuthor');
+        // 優先使用登入用戶的 username
+        let username = null;
         
-        if (currentAuthor && typeof getUserPoints !== 'undefined') {
-            const points = await getUserPoints(currentAuthor);
+        // 檢查是否有登入用戶
+        if (typeof Auth !== 'undefined' && Auth.isLoggedIn()) {
+            const currentUser = Auth.getCurrentUser();
+            if (currentUser && currentUser.username) {
+                username = currentUser.username;
+            }
+        }
+        
+        // 如果沒有登入用戶，嘗試使用 localStorage 中的 currentAuthor（向後兼容）
+        if (!username) {
+            username = localStorage.getItem('currentAuthor');
+        }
+        
+        if (username && typeof getUserPoints !== 'undefined') {
+            const points = await getUserPoints(username);
             const pointsValue = document.getElementById('pointsValue');
             if (pointsValue) {
                 pointsValue.textContent = points;
