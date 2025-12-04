@@ -39,6 +39,8 @@ CREATE INDEX IF NOT EXISTS idx_admin_config_order ON admin_config("order");
 ALTER TABLE admin_config ENABLE ROW LEVEL SECURITY;
 
 -- 8. 建立 RLS 政策（允許管理員讀寫）
+-- 先刪除已存在的政策（如果有的話），然後重新建立
+DROP POLICY IF EXISTS "管理員可以讀取 admin_config" ON admin_config;
 CREATE POLICY "管理員可以讀取 admin_config"
     ON admin_config FOR SELECT
     USING (
@@ -49,6 +51,7 @@ CREATE POLICY "管理員可以讀取 admin_config"
         )
     );
 
+DROP POLICY IF EXISTS "管理員可以插入 admin_config" ON admin_config;
 CREATE POLICY "管理員可以插入 admin_config"
     ON admin_config FOR INSERT
     WITH CHECK (
@@ -59,6 +62,7 @@ CREATE POLICY "管理員可以插入 admin_config"
         )
     );
 
+DROP POLICY IF EXISTS "管理員可以更新 admin_config" ON admin_config;
 CREATE POLICY "管理員可以更新 admin_config"
     ON admin_config FOR UPDATE
     USING (
@@ -69,6 +73,7 @@ CREATE POLICY "管理員可以更新 admin_config"
         )
     );
 
+DROP POLICY IF EXISTS "管理員可以刪除 admin_config" ON admin_config;
 CREATE POLICY "管理員可以刪除 admin_config"
     ON admin_config FOR DELETE
     USING (
