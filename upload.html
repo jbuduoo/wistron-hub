@@ -221,14 +221,6 @@
                         </div>
                     </div>
 
-                    <!-- 競賽標記 -->
-                    <div class="form-group">
-                        <label>
-                            <input type="checkbox" id="isHackathon" name="isHackathon">
-                            <span style="margin-left: 0.5rem;">標記為 2025黑客松競賽相關內容</span>
-                        </label>
-                        <small class="form-hint">勾選此選項後，內容將顯示在「2025黑客松競賽」分類中</small>
-                    </div>
 
                     <!-- 規範提示 -->
                     <div class="guidelines">
@@ -407,7 +399,7 @@
             const file = formData.get('file');
             const videoLink = formData.get('videoLink');
             const githubLink = formData.get('githubLink');
-            const isHackathon = document.getElementById('isHackathon').checked;
+            const isHackathon = false; // 已移除競賽標記功能
             
             // 最新消息時間欄位
             const startDate = formData.get('startDate');
