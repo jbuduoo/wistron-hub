@@ -18,6 +18,11 @@
             </div>
         </div>
         <div class="header-right">
+            <div class="user-points" id="userPoints">
+                <span class="points-icon">⭐</span>
+                <span class="points-label">知識積分：</span>
+                <span class="points-value" id="pointsValue">0</span>
+            </div>
             <button class="btn-secondary" onclick="window.location.href='index.html'">返回首頁</button>
         </div>
     </header>
@@ -201,7 +206,7 @@
                 mediaSection.innerHTML = `
                     <div class="placeholder-media">
                         <span class="placeholder-icon">${content.type === 'video' ? '🎬' : content.type === 'article' ? '📄' : content.type === 'project' ? '💻' : '💭'}</span>
-                        <p>${content.type === 'video' ? '影片分享' : content.type === 'article' ? '文章分享' : content.type === 'project' ? '作品分享' : '建議提案'}</p>
+                        <p>${content.type === 'video' ? '影片分享' : content.type === 'article' ? '文章分享' : content.type === 'project' ? '作品分享' : content.type === 'suggestion' ? '懸賞區' : content.type === 'job' ? '專案支援技能媒合' : content.type === 'news' ? '最新消息' : content.type === 'expert' ? '找內部專家' : ''}</p>
                     </div>
                 `;
             }
@@ -647,9 +652,31 @@
             }
         });
 
+        // 載入用戶積分
+        async function loadUserPoints() {
+            try {
+                const currentAuthor = localStorage.getItem('currentAuthor');
+                if (currentAuthor && typeof getUserPoints !== 'undefined') {
+                    const points = await getUserPoints(currentAuthor);
+                    const pointsValue = document.getElementById('pointsValue');
+                    if (pointsValue) {
+                        pointsValue.textContent = points;
+                    }
+                } else {
+                    const userPoints = document.getElementById('userPoints');
+                    if (userPoints) {
+                        userPoints.style.display = 'none';
+                    }
+                }
+            } catch (error) {
+                console.error('載入用戶積分失敗:', error);
+            }
+        }
+
         // 頁面載入時執行
         if (contentId) {
             loadContentDetail();
+            loadUserPoints();
         } else {
             document.querySelector('.detail-container').innerHTML = '<p>無效的內容 ID</p>';
         }

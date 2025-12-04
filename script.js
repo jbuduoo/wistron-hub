@@ -390,7 +390,7 @@ function getTypeIcon(type) {
         news: '📢',
         video: '🎬',
         article: '📄',
-        suggestion: '💭',
+        suggestion: '💰',
         project: '💻',
         job: '🤝',
         expert: '🤝'
@@ -404,7 +404,7 @@ function getTypeName(type) {
         news: '最新消息',
         video: '影片分享',
         article: '文章分享',
-        suggestion: '建議提案',
+        suggestion: '懸賞區',
         project: '作品分享',
         job: '專案支援及技能媒合',
         expert: '找內部專家'
@@ -546,7 +546,7 @@ function setupSidebarFilter() {
                 news: '最新消息',
                 video: '影片分享',
                 article: '文章分享',
-                suggestion: '建議提案',
+                suggestion: '懸賞區',
                 project: '作品分享',
                 job: '專案支援及技能媒合',
                 expert: '找內部專家'
@@ -572,6 +572,30 @@ function setupSort() {
     }
 }
 
+// 載入用戶知識積分
+async function loadUserPoints() {
+    try {
+        // 從 localStorage 取得當前用戶名稱
+        const currentAuthor = localStorage.getItem('currentAuthor');
+        
+        if (currentAuthor && typeof getUserPoints !== 'undefined') {
+            const points = await getUserPoints(currentAuthor);
+            const pointsValue = document.getElementById('pointsValue');
+            if (pointsValue) {
+                pointsValue.textContent = points;
+            }
+        } else {
+            // 如果沒有當前用戶，隱藏積分顯示
+            const userPoints = document.getElementById('userPoints');
+            if (userPoints) {
+                userPoints.style.display = 'none';
+            }
+        }
+    } catch (error) {
+        console.error('載入用戶積分失敗:', error);
+    }
+}
+
 // 頁面載入時初始化
 if (document.getElementById('contentGrid')) {
     // 檢查必要的函數是否存在
@@ -589,6 +613,7 @@ if (document.getElementById('contentGrid')) {
         setupSearch();
         setupSidebarFilter();
         setupSort();
+        loadUserPoints(); // 載入用戶積分
     }
 }
 

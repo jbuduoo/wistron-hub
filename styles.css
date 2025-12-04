@@ -91,6 +91,32 @@ body {
     box-shadow: 0 0 0 2px #fbbf24;
 }
 
+.user-points {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(255, 255, 255, 0.15);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    margin-right: 1rem;
+    font-size: 0.9rem;
+    backdrop-filter: blur(10px);
+}
+
+.points-icon {
+    font-size: 1.1rem;
+}
+
+.points-label {
+    opacity: 0.9;
+}
+
+.points-value {
+    font-weight: 700;
+    font-size: 1rem;
+    color: #fbbf24;
+}
+
 .upload-btn {
     background: #fbbf24;
     color: #1e3a8a;

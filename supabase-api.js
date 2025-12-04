@@ -126,6 +126,14 @@ async function addContentToSupabase(newContent) {
         const existingData = await loadDataFromSupabase();
         localStorage.setItem('contents', JSON.stringify(existingData));
 
+        // 自動增加用戶知識積分（發文加 1 分）
+        try {
+            await addUserPoints(newContent.author, 1);
+        } catch (error) {
+            console.error('增加用戶積分失敗:', error);
+            // 不影響主要功能，繼續執行
+        }
+
         return { 
             success: true, 
             message: '資料已成功儲存到 Supabase',
@@ -338,6 +346,122 @@ async function updateCommentInSupabase(commentId, updatedData) {
     } catch (error) {
         console.error('更新留言失敗:', error);
         throw error;
+    }
+}
+
+// 知識積分系統
+// 增加用戶知識積分（發文時自動加分）
+async function addUserPoints(authorName, points = 1) {
+    try {
+        const client = initSupabase();
+        if (!client) {
+            // 使用 localStorage 作為備援
+            const users = JSON.parse(localStorage.getItem('users') || '{}');
+            if (!users[authorName]) {
+                users[authorName] = { name: authorName, points: 0 };
+            }
+            users[authorName].points = (users[authorName].points || 0) + points;
+            localStorage.setItem('users', JSON.stringify(users));
+            return { success: true, points: users[authorName].points };
+        }
+
+        // 檢查用戶是否存在
+        const { data: existingUser, error: checkError } = await client
+            .from('users')
+            .select('*')
+            .eq('name', authorName)
+            .single();
+
+        if (checkError && checkError.code !== 'PGRST116') { // PGRST116 表示找不到記錄
+            throw checkError;
+        }
+
+        if (existingUser) {
+            // 更新現有用戶積分
+            const newPoints = (existingUser.points || 0) + points;
+            const { data, error } = await client
+                .from('users')
+                .update({ points: newPoints })
+                .eq('name', authorName)
+                .select()
+                .single();
+
+            if (error) {
+                throw error;
+            }
+
+            // 更新 localStorage
+            const users = JSON.parse(localStorage.getItem('users') || '{}');
+            users[authorName] = { name: authorName, points: newPoints };
+            localStorage.setItem('users', JSON.stringify(users));
+
+            return { success: true, points: newPoints };
+        } else {
+            // 建立新用戶
+            const { data, error } = await client
+                .from('users')
+                .insert([{ name: authorName, points: points }])
+                .select()
+                .single();
+
+            if (error) {
+                throw error;
+            }
+
+            // 更新 localStorage
+            const users = JSON.parse(localStorage.getItem('users') || '{}');
+            users[authorName] = { name: authorName, points: points };
+            localStorage.setItem('users', JSON.stringify(users));
+
+            return { success: true, points: points };
+        }
+    } catch (error) {
+        console.error('增加用戶積分失敗:', error);
+        // 即使失敗也嘗試使用 localStorage
+        try {
+            const users = JSON.parse(localStorage.getItem('users') || '{}');
+            if (!users[authorName]) {
+                users[authorName] = { name: authorName, points: 0 };
+            }
+            users[authorName].points = (users[authorName].points || 0) + points;
+            localStorage.setItem('users', JSON.stringify(users));
+            return { success: true, points: users[authorName].points, fallback: true };
+        } catch (localError) {
+            return { success: false, message: error.message };
+        }
+    }
+}
+
+// 取得用戶知識積分
+async function getUserPoints(authorName) {
+    try {
+        const client = initSupabase();
+        if (!client) {
+            // 使用 localStorage 作為備援
+            const users = JSON.parse(localStorage.getItem('users') || '{}');
+            return users[authorName]?.points || 0;
+        }
+
+        const { data, error } = await client
+            .from('users')
+            .select('points')
+            .eq('name', authorName)
+            .single();
+
+        if (error) {
+            if (error.code === 'PGRST116') {
+                // 用戶不存在，返回 0
+                return 0;
+            }
+            throw error;
+        }
+
+        return data?.points || 0;
+    } catch (error) {
+        console.error('取得用戶積分失敗:', error);
+        // 使用 localStorage 作為備援
+        const users = JSON.parse(localStorage.getItem('users') || '{}');
+        return users[authorName]?.points || 0;
     }
 }
 

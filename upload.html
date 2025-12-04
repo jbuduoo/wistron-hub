@@ -18,6 +18,11 @@
             </div>
         </div>
         <div class="header-right">
+            <div class="user-points" id="userPoints">
+                <span class="points-icon">⭐</span>
+                <span class="points-label">知識積分：</span>
+                <span class="points-value" id="pointsValue">0</span>
+            </div>
             <button class="btn-secondary" onclick="window.location.href='index.html'">返回首頁</button>
         </div>
     </header>
@@ -57,8 +62,8 @@
                             <label class="type-option">
                                 <input type="radio" name="contentType" value="suggestion" required>
                                 <div class="type-card">
-                                    <span class="type-icon">💭</span>
-                                    <span>建議提案</span>
+                                    <span class="type-icon">💰</span>
+                                    <span>懸賞區</span>
                                 </div>
                             </label>
                             <label class="type-option">
@@ -221,6 +226,37 @@
     <script src="supabase-api.js?v=2"></script>
     <script src="script.js"></script>
     <script>
+        // 載入用戶積分（當作者名稱改變時）
+        async function updatePointsDisplay() {
+            const authorInput = document.getElementById('author');
+            if (authorInput && typeof getUserPoints !== 'undefined') {
+                const author = authorInput.value.trim();
+                if (author) {
+                    try {
+                        const points = await getUserPoints(author);
+                        const pointsValue = document.getElementById('pointsValue');
+                        if (pointsValue) {
+                            pointsValue.textContent = points;
+                        }
+                    } catch (error) {
+                        console.error('載入積分失敗:', error);
+                    }
+                }
+            }
+        }
+
+        // 監聽作者輸入框變化
+        const authorInput = document.getElementById('author');
+        if (authorInput) {
+            authorInput.addEventListener('blur', updatePointsDisplay);
+            // 頁面載入時也載入積分
+            const currentAuthor = localStorage.getItem('currentAuthor');
+            if (currentAuthor) {
+                authorInput.value = currentAuthor;
+                updatePointsDisplay();
+            }
+        }
+
         // 檔案預覽功能
         document.getElementById('file').addEventListener('change', function(e) {
             const file = e.target.files[0];
@@ -318,7 +354,19 @@
                 const result = await addContentToSupabase(content);
                 
                 if (result.success) {
-                    alert('內容提交成功！管理員將審核您的內容，符合規範即可獲得認證徽章。');
+                    // 儲存作者名稱到 localStorage，以便在其他頁面顯示積分
+                    localStorage.setItem('currentAuthor', author);
+                    
+                    // 更新積分顯示
+                    if (typeof getUserPoints !== 'undefined') {
+                        const points = await getUserPoints(author);
+                        const pointsValue = document.getElementById('pointsValue');
+                        if (pointsValue) {
+                            pointsValue.textContent = points;
+                        }
+                    }
+                    
+                    alert('內容提交成功！已獲得 1 知識積分。管理員將審核您的內容，符合規範即可獲得認證徽章。');
                     window.location.href = 'index.html';
                 } else {
                     alert(`提交時發生問題：${result.message}\n\n${result.fallback ? '資料已儲存到本地，請稍後再試。' : ''}`);
