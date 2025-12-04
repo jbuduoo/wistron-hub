@@ -379,9 +379,8 @@ async function renderFormFields() {
         await loadFieldTemplates();
     }
     
-    const contentTypes = ['all', 'news', 'video', 'article', 'suggestion', 'project', 'job', 'expert'];
+    const contentTypes = ['news', 'video', 'article', 'suggestion', 'project', 'job', 'expert'];
     const typeLabels = {
-        'all': '所有類型',
         'news': '最新消息',
         'video': '影片分享',
         'article': '文章分享',
@@ -462,7 +461,7 @@ async function renderFormFields() {
 let draggedFieldElement = null; // 全局變數，用於追蹤正在拖拽的欄位
 
 function initFieldDragAndDrop() {
-    const contentTypes = ['all', 'news', 'video', 'article', 'suggestion', 'project', 'job', 'expert'];
+    const contentTypes = ['news', 'video', 'article', 'suggestion', 'project', 'job', 'expert'];
     
     contentTypes.forEach(type => {
         const fieldsContainer = document.getElementById(`fields_${type}`);
@@ -567,7 +566,7 @@ function toggleContentTypeFields(type) {
     const isCurrentlyOpen = computedStyle.display !== 'none';
     
     // 获取所有内容类型的字段容器
-    const contentTypes = ['all', 'news', 'video', 'article', 'suggestion', 'project', 'job', 'expert'];
+    const contentTypes = ['news', 'video', 'article', 'suggestion', 'project', 'job', 'expert'];
     
     // 如果当前项目是关闭的，先关闭所有其他项目
     if (!isCurrentlyOpen) {
