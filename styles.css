@@ -394,7 +394,7 @@ body {
 .news-list {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: 1.5rem;
 }
 
 .news-list-item {
@@ -406,6 +406,9 @@ body {
     cursor: pointer;
     transition: all 0.3s;
     position: relative;
+    margin-bottom: 0;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .news-list-item:hover {
