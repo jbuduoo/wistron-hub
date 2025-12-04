@@ -306,6 +306,7 @@ function renderFormFields() {
                 <div class="content-type-header" onclick="toggleContentTypeFields('${type}')">
                     <strong>${typeLabels[type]}</strong>
                     <span>(${sortedFields.length} 個欄位)</span>
+                    <button class="btn-add" onclick="event.stopPropagation(); showTemplateSelectorForField('${type}');" style="margin-left: auto; padding: 0.4rem 0.8rem; font-size: 0.85rem;">+ 新增模版</button>
                 </div>
                 <div class="content-type-fields" id="fields_${type}">
                     ${sortedFields.map(field => `
@@ -327,7 +328,6 @@ function renderFormFields() {
                             </div>
                         </div>
                     `).join('')}
-                    <button class="btn-add" onclick="showTemplateSelectorForField('${type}')" style="margin-top: 0.4rem;">+ 新增模版</button>
                 </div>
             </div>
         `;
