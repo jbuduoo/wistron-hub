@@ -277,13 +277,18 @@ async function handleSidebarSubmit(e) {
 // 載入表單欄位配置
 async function loadFormFieldsConfig() {
     formFields = await getFormFieldsConfig();
-    renderFormFields();
+    await renderFormFields();
 }
 
 // 渲染表單欄位
-function renderFormFields() {
+async function renderFormFields() {
     const container = document.getElementById('fieldsByContentType');
     if (!container) return;
+    
+    // 確保模板已載入
+    if (fieldTemplates.length === 0) {
+        await loadFieldTemplates();
+    }
     
     const contentTypes = ['all', 'news', 'video', 'article', 'suggestion', 'project', 'job', 'expert'];
     const typeLabels = {
@@ -297,6 +302,11 @@ function renderFormFields() {
         'expert': '找內部專家'
     };
     
+    // 生成模板選項
+    const templateOptions = fieldTemplates.map(template => 
+        `<option value="${template.id}">${template.name} (${template.fieldKey})</option>`
+    ).join('');
+    
     container.innerHTML = contentTypes.map(type => {
         const fields = formFields.filter(f => f.contentType === type);
         const sortedFields = [...fields].sort((a, b) => a.order - b.order);
@@ -306,7 +316,13 @@ function renderFormFields() {
                 <div class="content-type-header" onclick="toggleContentTypeFields('${type}')">
                     <strong>${typeLabels[type]}</strong>
                     <span>(${sortedFields.length} 個欄位)</span>
-                    <button class="btn-add" onclick="event.stopPropagation(); showTemplateSelectorForField('${type}');" style="margin-left: auto; padding: 0.4rem 0.8rem; font-size: 0.85rem;">+ 新增模版</button>
+                    <div style="display: flex; align-items: center; gap: 0.5rem; margin-left: auto;" onclick="event.stopPropagation();">
+                        <select id="templateSelect_${type}" style="padding: 0.4rem 0.6rem; border: 1px solid #ddd; border-radius: 4px; font-size: 0.85rem; min-width: 200px;">
+                            <option value="">請選擇模板</option>
+                            ${templateOptions}
+                        </select>
+                        <button class="btn-add" onclick="event.stopPropagation(); addFieldFromTemplate('${type}');" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">+ 新增模版</button>
+                    </div>
                 </div>
                 <div class="content-type-fields" id="fields_${type}">
                     ${sortedFields.map(field => `
@@ -390,7 +406,7 @@ async function deleteField(id) {
     
     formFields = formFields.filter(f => f.id !== id);
     await saveFormFieldsConfig(formFields);
-    renderFormFields();
+    await renderFormFields();
     showAlert('欄位已刪除', 'success');
 }
 
@@ -401,7 +417,7 @@ async function toggleFieldEnabled(id) {
     
     field.enabled = !field.enabled;
     await saveFormFieldsConfig(formFields);
-    renderFormFields();
+    await renderFormFields();
     showAlert(`欄位已${field.enabled ? '啟用' : '停用'}`, 'success');
 }
 
@@ -470,7 +486,7 @@ async function handleFieldSubmit(e) {
     }
     
     await saveFormFieldsConfig(formFields);
-    renderFormFields();
+    await renderFormFields();
     closeFieldModal();
     showAlert('儲存成功', 'success');
 }
@@ -554,10 +570,65 @@ function renderTemplatesList() {
     `).join('');
 }
 
-// 從表單欄位管理頁面打開模板選擇器
-async function showTemplateSelectorForField(contentType) {
-    currentContentTypeForTemplate = contentType;
-    await showTemplateSelector();
+// 從下拉選單選擇模板並新增欄位
+async function addFieldFromTemplate(contentType) {
+    const selectElement = document.getElementById(`templateSelect_${contentType}`);
+    if (!selectElement) return;
+    
+    const templateId = selectElement.value;
+    if (!templateId) {
+        showAlert('請先選擇模板', 'error');
+        return;
+    }
+    
+    // 確保模板已載入
+    if (fieldTemplates.length === 0) {
+        await loadFieldTemplates();
+    }
+    
+    const template = fieldTemplates.find(t => t.id === templateId);
+    if (!template) {
+        showAlert('模板不存在', 'error');
+        return;
+    }
+    
+    // 檢查是否已存在相同 fieldKey 的欄位
+    const existingField = formFields.find(f => 
+        f.contentType === contentType && f.fieldKey === template.fieldKey
+    );
+    
+    if (existingField) {
+        showAlert(`欄位「${template.label}」已存在於此內容類型中`, 'error');
+        return;
+    }
+    
+    // 創建新欄位
+    const newField = {
+        id: 'f' + Date.now(),
+        contentType: contentType,
+        fieldKey: template.fieldKey,
+        fieldType: template.fieldType,
+        label: template.label,
+        placeholder: template.placeholder || '',
+        required: template.required || false,
+        enabled: true,
+        order: formFields.filter(f => f.contentType === contentType).length,
+        options: template.options || undefined
+    };
+    
+    // 新增到陣列
+    formFields.push(newField);
+    
+    // 儲存到資料庫/localStorage
+    await saveFormFieldsConfig(formFields);
+    
+    // 重新渲染表單欄位列表
+    await renderFormFields();
+    
+    // 重置下拉選單
+    selectElement.value = '';
+    
+    showAlert(`欄位「${template.label}」已成功新增`, 'success');
 }
 
 // 顯示新增模板 Modal
@@ -766,7 +837,7 @@ async function selectTemplate(templateId) {
         await saveFormFieldsConfig(formFields);
         
         // 重新渲染表單欄位列表
-        renderFormFields();
+        await renderFormFields();
         
         // 重置變數
         currentContentTypeForTemplate = null;
