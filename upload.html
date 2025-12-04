@@ -126,6 +126,13 @@
                         </div>
                     </div>
 
+                    <!-- 影片連結（影片分享專用） -->
+                    <div class="form-group" id="videoLinkGroup" style="display: none;">
+                        <label for="videoLink">影片連結 <span class="required">*</span></label>
+                        <input type="url" id="videoLink" name="videoLink" placeholder="https://www.youtube.com/watch?v=... 或 https://vimeo.com/...">
+                        <small class="form-hint">請輸入 YouTube 或 Vimeo 影片連結</small>
+                    </div>
+
                     <!-- GitHub 連結（作品分享專用） -->
                     <div class="form-group" id="githubLinkGroup" style="display: none;">
                         <label for="githubLink">GitHub 連結 <span class="required">*</span></label>
@@ -269,15 +276,19 @@
 
         function toggleFormFields() {
             const contentType = contentTypeSelect.value;
+            const videoLinkGroup = document.getElementById('videoLinkGroup');
             
             // 重置所有欄位顯示狀態
             if (newsTimeGroup) newsTimeGroup.style.display = 'none';
+            if (videoLinkGroup) videoLinkGroup.style.display = 'none';
             if (githubLinkGroup) githubLinkGroup.style.display = 'none';
             if (jobInfoGroup) jobInfoGroup.style.display = 'none';
             
             // 根據選擇的類型顯示對應欄位
             if (contentType === 'news') {
                 if (newsTimeGroup) newsTimeGroup.style.display = 'block';
+            } else if (contentType === 'video') {
+                if (videoLinkGroup) videoLinkGroup.style.display = 'block';
             } else if (contentType === 'project') {
                 if (githubLinkGroup) githubLinkGroup.style.display = 'block';
             } else if (contentType === 'job') {
@@ -372,6 +383,7 @@
                 return;
             }
             const file = formData.get('file');
+            const videoLink = formData.get('videoLink');
             const githubLink = formData.get('githubLink');
             const isHackathon = document.getElementById('isHackathon').checked;
             
@@ -386,6 +398,12 @@
             const jobSalary = formData.get('jobSalary');
             const jobRequirements = formData.get('jobRequirements');
             const jobContact = formData.get('jobContact');
+
+            // 驗證影片分享必須有影片連結
+            if (contentType === 'video' && !videoLink) {
+                alert('影片分享必須提供影片連結！');
+                return;
+            }
 
             // 驗證作品分享必須有 GitHub 連結
             if (contentType === 'project' && !githubLink) {
@@ -410,6 +428,7 @@
                 description: description,
                 file: file ? file.name : null,
                 fileUrl: file ? URL.createObjectURL(file) : null,
+                videoLink: videoLink || null,
                 githubLink: githubLink || null,
                 isHackathon: isHackathon,
                 // 最新消息時間

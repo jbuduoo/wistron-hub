@@ -46,6 +46,7 @@ async function loadDataFromSupabase() {
             likes: item.likes || 0,
             content: item.content,
             mediaUrl: item.media_url,
+            videoLink: item.video_link || item.videoUrl,
             githubUrl: item.github_url,
             hackathon: item.hackathon || false,
             startDate: item.start_date,
@@ -99,6 +100,7 @@ async function addContentToSupabase(newContent) {
             author: newContent.author,
             content: newContent.content || null,
             media_url: newContent.mediaUrl || null,
+            video_link: newContent.videoLink || null,
             github_url: newContent.githubUrl || null,
             hackathon: newContent.hackathon || false,
             start_date: newContent.startDate || null,
@@ -183,6 +185,7 @@ async function updateContentInSupabase(contentId, updatedContent) {
         if (updatedContent.description !== undefined) dbData.description = updatedContent.description;
         if (updatedContent.content !== undefined) dbData.content = updatedContent.content;
         if (updatedContent.mediaUrl !== undefined) dbData.media_url = updatedContent.mediaUrl;
+        if (updatedContent.videoLink !== undefined) dbData.video_link = updatedContent.videoLink;
         if (updatedContent.githubUrl !== undefined) dbData.github_url = updatedContent.githubUrl;
         if (updatedContent.hackathon !== undefined) dbData.hackathon = updatedContent.hackathon;
         if (updatedContent.startDate !== undefined) dbData.start_date = updatedContent.startDate;

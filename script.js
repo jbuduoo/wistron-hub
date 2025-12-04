@@ -226,6 +226,28 @@ async function initializeData() {
     }
 }
 
+// 獲取影片縮圖
+function getVideoThumbnail(videoLink) {
+    if (!videoLink) return null;
+    
+    // YouTube 縮圖
+    const youtubeRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
+    const youtubeMatch = videoLink.match(youtubeRegex);
+    if (youtubeMatch) {
+        return `https://img.youtube.com/vi/${youtubeMatch[1]}/maxresdefault.jpg`;
+    }
+    
+    // Vimeo 縮圖（需要 API，這裡先用預設）
+    const vimeoRegex = /(?:vimeo\.com\/)(\d+)/;
+    const vimeoMatch = videoLink.match(vimeoRegex);
+    if (vimeoMatch) {
+        // Vimeo 縮圖需要 API，這裡返回 null，使用預設圖示
+        return null;
+    }
+    
+    return null;
+}
+
 // 載入內容到主頁
 async function loadContent(filter = 'all', sort = 'newest') {
     let contents = [];
@@ -348,9 +370,11 @@ async function loadContent(filter = 'all', sort = 'newest') {
             <div class="content-card ${isOfficial ? 'official-news' : ''}" onclick="window.location.href='detail.html?id=${content.id}'">
                 ${isOfficial ? '<div class="official-badge">官方公告</div>' : ''}
                 <div class="card-thumbnail">
-                    ${content.fileUrl ? 
-                        `<img src="${content.fileUrl}" alt="${content.title}">` : 
-                        `<div class="placeholder-thumbnail ${patternClass} ${colorClass}">${getTypeIcon(content.type)}</div>`
+                    ${content.videoLink ? 
+                        `<img src="${getVideoThumbnail(content.videoLink) || ''}" alt="${content.title}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\\'placeholder-thumbnail ${patternClass} ${colorClass}\\'>${getTypeIcon(content.type)}</div>'">` :
+                        content.fileUrl ? 
+                            `<img src="${content.fileUrl}" alt="${content.title}">` : 
+                            `<div class="placeholder-thumbnail ${patternClass} ${colorClass}">${getTypeIcon(content.type)}</div>`
                     }
                 </div>
                 <div class="card-info">
@@ -488,9 +512,11 @@ function setupSearch() {
             <div class="content-card ${isOfficial ? 'official-news' : ''}" onclick="window.location.href='detail.html?id=${content.id}'">
                 ${isOfficial ? '<div class="official-badge">官方公告</div>' : ''}
                 <div class="card-thumbnail">
-                    ${content.fileUrl ? 
-                        `<img src="${content.fileUrl}" alt="${content.title}">` : 
-                        `<div class="placeholder-thumbnail ${patternClass} ${colorClass}">${getTypeIcon(content.type)}</div>`
+                    ${content.videoLink ? 
+                        `<img src="${getVideoThumbnail(content.videoLink) || ''}" alt="${content.title}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\\'placeholder-thumbnail ${patternClass} ${colorClass}\\'>${getTypeIcon(content.type)}</div>'">` :
+                        content.fileUrl ? 
+                            `<img src="${content.fileUrl}" alt="${content.title}">` : 
+                            `<div class="placeholder-thumbnail ${patternClass} ${colorClass}">${getTypeIcon(content.type)}</div>`
                     }
                 </div>
                 <div class="card-info">

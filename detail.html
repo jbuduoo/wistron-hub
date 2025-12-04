@@ -171,6 +171,39 @@
             // 如果是最新消息，隱藏媒體區域
             if (content.type === 'news') {
                 mediaSection.style.display = 'none';
+            } else if (content.type === 'video' && content.videoLink) {
+                // 處理外部影片連結（YouTube/Vimeo）
+                mediaSection.style.display = 'block';
+                let embedUrl = '';
+                
+                // YouTube 嵌入連結
+                const youtubeRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
+                const youtubeMatch = content.videoLink.match(youtubeRegex);
+                if (youtubeMatch) {
+                    embedUrl = `https://www.youtube.com/embed/${youtubeMatch[1]}`;
+                }
+                
+                // Vimeo 嵌入連結
+                const vimeoRegex = /(?:vimeo\.com\/)(\d+)/;
+                const vimeoMatch = content.videoLink.match(vimeoRegex);
+                if (vimeoMatch) {
+                    embedUrl = `https://player.vimeo.com/video/${vimeoMatch[1]}`;
+                }
+                
+                if (embedUrl) {
+                    mediaSection.innerHTML = `
+                        <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 12px;">
+                            <iframe src="${embedUrl}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0;" allowfullscreen></iframe>
+                        </div>
+                    `;
+                } else {
+                    mediaSection.innerHTML = `
+                        <div style="padding: 2rem; text-align: center; background: #f0f0f0; border-radius: 12px;">
+                            <p>無法識別的影片連結格式</p>
+                            <a href="${content.videoLink}" target="_blank" style="color: #3b82f6; text-decoration: underline;">點擊開啟影片連結</a>
+                        </div>
+                    `;
+                }
             } else if (content.type === 'video' && content.fileUrl) {
                 mediaSection.style.display = 'block';
                 mediaSection.innerHTML = `
