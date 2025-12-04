@@ -312,6 +312,29 @@
             color: #721c24;
             border: 1px solid #f5c6cb;
         }
+        .icon-picker-item {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            font-size: 1.5rem;
+            background: white;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .icon-picker-item:hover {
+            background: #f0f0f0;
+            border-color: #858ae8;
+            transform: scale(1.1);
+        }
+        .icon-picker-item.selected {
+            background: #858ae8;
+            border-color: #858ae8;
+            color: white;
+        }
     </style>
 </head>
 <body>
@@ -403,7 +426,15 @@
                 </div>
                 <div class="form-group-admin">
                     <label for="sidebarIcon">圖標 (Emoji) <span class="required">*</span></label>
-                    <input type="text" id="sidebarIcon" required placeholder="例如: 📢, 🎬, 📄" maxlength="2">
+                    <div style="display: flex; gap: 0.5rem; align-items: center;">
+                        <input type="text" id="sidebarIcon" required placeholder="選擇或輸入圖標" maxlength="2" style="flex: 1;">
+                        <button type="button" class="btn-small" onclick="showIconPicker()" style="white-space: nowrap;">選擇圖標</button>
+                    </div>
+                    <div id="iconPickerContainer" style="display: none; margin-top: 0.5rem; padding: 0.75rem; background: #f9f9f9; border-radius: 6px; border: 1px solid #e5e5e5;">
+                        <div style="display: grid; grid-template-columns: repeat(10, 1fr); gap: 0.5rem;">
+                            <!-- 圖標將動態生成 -->
+                        </div>
+                    </div>
                 </div>
                 <div class="form-group-admin">
                     <label for="sidebarLabel">顯示文字 <span class="required">*</span></label>
@@ -594,7 +625,7 @@
     <script src="js/supabase-api.js?v=3"></script>
     <script src="js/auth.js?v=2"></script>
     <script src="js/admin-api.js?v=4"></script>
-    <script src="js/admin-ui.js?v=9"></script>
+    <script src="js/admin-ui.js?v=10"></script>
 </body>
 </html>
 

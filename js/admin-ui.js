@@ -192,12 +192,72 @@ async function updateSidebarOrder() {
     showAlert('順序已更新', 'success');
 }
 
+// 預設圖標列表（20個常用圖標）
+const defaultIcons = [
+    '📢', '🎬', '📄', '💰', '💻', '🤝', '🏆', '📚',
+    '🎯', '💡', '🚀', '⭐', '🔥', '🎨', '📊', '🔔',
+    '📝', '🎪', '🎁', '🌟'
+];
+
+// 顯示圖標選擇器
+function showIconPicker() {
+    const container = document.getElementById('iconPickerContainer');
+    if (!container) return;
+    
+    const isVisible = container.style.display !== 'none';
+    container.style.display = isVisible ? 'none' : 'block';
+    
+    if (!isVisible) {
+        // 生成圖標選擇器
+        const currentIcon = document.getElementById('sidebarIcon').value;
+        container.innerHTML = `
+            <div style="display: grid; grid-template-columns: repeat(10, 1fr); gap: 0.5rem;">
+                ${defaultIcons.map(icon => `
+                    <div class="icon-picker-item ${icon === currentIcon ? 'selected' : ''}" 
+                         onclick="selectIcon('${icon}')" 
+                         title="${icon}">
+                        ${icon}
+                    </div>
+                `).join('')}
+            </div>
+        `;
+    }
+}
+
+// 選擇圖標
+function selectIcon(icon) {
+    const iconInput = document.getElementById('sidebarIcon');
+    if (iconInput) {
+        iconInput.value = icon;
+    }
+    
+    // 更新選擇狀態
+    const container = document.getElementById('iconPickerContainer');
+    if (container) {
+        container.querySelectorAll('.icon-picker-item').forEach(item => {
+            if (item.textContent.trim() === icon) {
+                item.classList.add('selected');
+            } else {
+                item.classList.remove('selected');
+            }
+        });
+    }
+    
+    // 可選：選擇後自動隱藏選擇器
+    // showIconPicker();
+}
+
 // 顯示新增側邊欄項目 Modal
 function showAddSidebarModal() {
     editingSidebarId = null;
     document.getElementById('sidebarModalTitle').textContent = '新增側邊欄項目';
     document.getElementById('sidebarForm').reset();
     document.getElementById('sidebarItemId').value = '';
+    // 隱藏圖標選擇器
+    const iconPicker = document.getElementById('iconPickerContainer');
+    if (iconPicker) {
+        iconPicker.style.display = 'none';
+    }
     document.getElementById('sidebarModal').classList.add('active');
 }
 
@@ -214,6 +274,13 @@ function editSidebarItem(id) {
     document.getElementById('sidebarLabel').value = item.label;
     document.getElementById('sidebarOrder').value = item.order;
     document.getElementById('sidebarEnabled').checked = item.enabled !== false;
+    
+    // 隱藏圖標選擇器
+    const iconPicker = document.getElementById('iconPickerContainer');
+    if (iconPicker) {
+        iconPicker.style.display = 'none';
+    }
+    
     document.getElementById('sidebarModal').classList.add('active');
 }
 
