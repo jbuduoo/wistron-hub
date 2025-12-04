@@ -1401,6 +1401,10 @@ body {
     box-shadow: 0 2px 12px rgba(0,0,0,0.08);
     margin-bottom: 1rem;
     border: 1px solid #f0f0f0;
+    max-width: 100%;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    box-sizing: border-box;
 }
 
 .media-section {
@@ -1562,33 +1566,79 @@ body {
     font-weight: 600;
 }
 
+.description {
+    max-width: 100%;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    word-break: break-word;
+}
+
 .description p {
     color: #666;
     line-height: 1.8;
     word-wrap: break-word;
+    overflow-wrap: break-word;
+    word-break: break-word;
+    max-width: 100%;
+    margin: 0.5rem 0;
+}
+
+/* 處理富文本編輯器可能產生的嵌套結構 */
+.description p:first-child {
+    margin-top: 0;
+}
+
+.description p:last-child {
+    margin-bottom: 0;
 }
 
 /* 富文本內容樣式 */
-.description p strong {
+.description p strong,
+.description strong {
     font-weight: 700;
 }
 
-.description p em {
+.description p em,
+.description em {
     font-style: italic;
 }
 
-.description p u {
+.description p u,
+.description u {
     text-decoration: underline;
 }
 
 .description p ul,
-.description p ol {
+.description p ol,
+.description ul,
+.description ol {
     margin: 0.5rem 0;
     padding-left: 2rem;
+    max-width: 100%;
+    overflow-wrap: break-word;
 }
 
-.description p li {
+.description p li,
+.description li {
     margin: 0.25rem 0;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+/* 處理富文本編輯器產生的 div 結構 */
+.description div {
+    margin: 0.5rem 0;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    max-width: 100%;
+}
+
+.description div:first-child {
+    margin-top: 0;
+}
+
+.description div:last-child {
+    margin-bottom: 0;
 }
 
 .action-buttons {
