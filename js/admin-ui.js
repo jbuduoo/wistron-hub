@@ -80,6 +80,12 @@ function switchTab(tabName) {
         document.getElementById('fieldsTab').classList.add('active');
     } else if (tabName === 'templates') {
         document.getElementById('templatesTab').classList.add('active');
+        // 切換到模板標籤頁時，確保模板列表已載入並渲染
+        if (fieldTemplates.length === 0) {
+            loadFieldTemplates();
+        } else {
+            renderTemplatesList();
+        }
     }
 }
 
@@ -488,14 +494,25 @@ function showAlert(message, type = 'success') {
 
 // 載入欄位模板
 async function loadFieldTemplates() {
-    fieldTemplates = await getFieldTemplates();
-    renderTemplatesList();
+    try {
+        fieldTemplates = await getFieldTemplates();
+        console.log('載入的模板數量:', fieldTemplates.length);
+        renderTemplatesList();
+    } catch (error) {
+        console.error('載入欄位模板失敗:', error);
+        showAlert('載入模板失敗', 'error');
+    }
 }
 
 // 渲染模板列表
 function renderTemplatesList() {
     const list = document.getElementById('templatesList');
-    if (!list) return;
+    if (!list) {
+        console.warn('找不到 templatesList 元素');
+        return;
+    }
+    
+    console.log('渲染模板列表，模板數量:', fieldTemplates.length);
     
     if (fieldTemplates.length === 0) {
         list.innerHTML = '<p style="color: #999; text-align: center; padding: 2rem;">目前沒有模板，點擊「新增模板」開始創建</p>';
