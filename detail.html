@@ -68,27 +68,20 @@
                 <div class="info-section">
                     <h1 id="detailTitle"></h1>
                     
+                    <!-- 互動資訊（讚、觀看、分享） -->
                     <div class="meta-info">
-                        <span class="meta-item">
-                            <span class="meta-icon">📅</span>
-                            <span class="meta-label">發布時間 :</span>
-                            <span class="meta-value" id="detailDate"></span>
-                        </span>
-                        <span class="meta-item">
-                            <span class="meta-icon">👤</span>
-                            <span class="meta-label">發表人 :</span>
-                            <span class="meta-value" id="detailAuthor"></span>
-                        </span>
-                        <span class="meta-item">
-                            <span class="meta-icon">👁️</span>
-                            <span class="meta-value" id="detailViews">0</span>
-                            <span class="meta-label">觀看</span>
-                        </span>
-                        <span class="meta-item">
+                        <button class="meta-action-btn" id="likeBtn" onclick="toggleLike()">
                             <span class="meta-icon">👍</span>
                             <span class="meta-value" id="detailLikes">0</span>
-                            <span class="meta-label">讚</span>
+                        </button>
+                        <span class="meta-item-view">
+                            <span class="meta-icon">👁️</span>
+                            <span class="meta-value" id="detailViews">0</span>
                         </span>
+                        <button class="meta-action-btn" onclick="shareContent()">
+                            <span class="meta-icon">📤</span>
+                            <span class="meta-label">分享</span>
+                        </button>
                     </div>
 
                     <!-- 獎勵徽章 -->
@@ -97,20 +90,24 @@
                         <span class="badge-text" id="badgeText"></span>
                     </div>
 
-                    <!-- 互動按鈕 -->
-                    <div class="action-buttons">
-                        <button class="action-btn" id="likeBtn" onclick="toggleLike()">
-                            <span>👍</span> 讚
-                        </button>
-                        <button class="action-btn" onclick="shareContent()">
-                            <span>📤</span> 分享
-                        </button>
-                    </div>
-
                     <!-- 描述 -->
                     <div class="description">
                         <h3>內容描述</h3>
                         <p id="detailDescription"></p>
+                    </div>
+
+                    <!-- 發布資訊（移到最底下） -->
+                    <div class="publish-info">
+                        <span class="publish-item">
+                            <span class="meta-icon">📅</span>
+                            <span class="meta-label">發布時間：</span>
+                            <span class="meta-value" id="detailDate"></span>
+                        </span>
+                        <span class="publish-item">
+                            <span class="meta-icon">👤</span>
+                            <span class="meta-label">發表人：</span>
+                            <span class="meta-value" id="detailAuthor"></span>
+                        </span>
                     </div>
                 </div>
             </div>
