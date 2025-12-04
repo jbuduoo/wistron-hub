@@ -5,9 +5,10 @@ async function getSidebarConfig() {
     const storageKey = 'admin_sidebar_config';
     
     // 嘗試從 Supabase 讀取
-    if (typeof supabase !== 'undefined' && supabase) {
-        try {
-            const { data, error } = await supabase
+    try {
+        const client = initSupabase();
+        if (client) {
+            const { data, error } = await client
                 .from('admin_config')
                 .select('*')
                 .eq('config_type', 'sidebar')
@@ -16,9 +17,9 @@ async function getSidebarConfig() {
             if (!error && data && data.length > 0) {
                 return data.map(item => item.config_data);
             }
-        } catch (error) {
-            console.warn('Supabase 讀取側邊欄配置失敗，使用 localStorage:', error);
         }
+    } catch (error) {
+        console.warn('Supabase 讀取側邊欄配置失敗，使用 localStorage:', error);
     }
     
     // 從 localStorage 讀取
@@ -48,10 +49,11 @@ async function saveSidebarConfig(items) {
     const storageKey = 'admin_sidebar_config';
     
     // 嘗試儲存到 Supabase
-    if (typeof supabase !== 'undefined' && supabase) {
-        try {
+    try {
+        const client = initSupabase();
+        if (client) {
             // 先刪除舊配置
-            await supabase
+            await client
                 .from('admin_config')
                 .delete()
                 .eq('config_type', 'sidebar');
@@ -62,7 +64,7 @@ async function saveSidebarConfig(items) {
                 config_data: item
             }));
             
-            const { error } = await supabase
+            const { error } = await client
                 .from('admin_config')
                 .insert(configData);
             
@@ -71,9 +73,9 @@ async function saveSidebarConfig(items) {
                 localStorage.setItem(storageKey, JSON.stringify(items));
                 return { success: true };
             }
-        } catch (error) {
-            console.warn('Supabase 儲存側邊欄配置失敗，使用 localStorage:', error);
         }
+    } catch (error) {
+        console.warn('Supabase 儲存側邊欄配置失敗，使用 localStorage:', error);
     }
     
     // 儲存到 localStorage
@@ -86,9 +88,10 @@ async function getFormFieldsConfig() {
     const storageKey = 'admin_form_fields_config';
     
     // 嘗試從 Supabase 讀取
-    if (typeof supabase !== 'undefined' && supabase) {
-        try {
-            const { data, error } = await supabase
+    try {
+        const client = initSupabase();
+        if (client) {
+            const { data, error } = await client
                 .from('admin_config')
                 .select('*')
                 .eq('config_type', 'form_fields')
@@ -97,9 +100,9 @@ async function getFormFieldsConfig() {
             if (!error && data && data.length > 0) {
                 return data.map(item => item.config_data);
             }
-        } catch (error) {
-            console.warn('Supabase 讀取表單欄位配置失敗，使用 localStorage:', error);
         }
+    } catch (error) {
+        console.warn('Supabase 讀取表單欄位配置失敗，使用 localStorage:', error);
     }
     
     // 從 localStorage 讀取
@@ -164,10 +167,11 @@ async function saveFormFieldsConfig(fields) {
     const storageKey = 'admin_form_fields_config';
     
     // 嘗試儲存到 Supabase
-    if (typeof supabase !== 'undefined' && supabase) {
-        try {
+    try {
+        const client = initSupabase();
+        if (client) {
             // 先刪除舊配置
-            await supabase
+            await client
                 .from('admin_config')
                 .delete()
                 .eq('config_type', 'form_fields');
@@ -178,7 +182,7 @@ async function saveFormFieldsConfig(fields) {
                 config_data: field
             }));
             
-            const { error } = await supabase
+            const { error } = await client
                 .from('admin_config')
                 .insert(configData);
             
@@ -187,9 +191,9 @@ async function saveFormFieldsConfig(fields) {
                 localStorage.setItem(storageKey, JSON.stringify(fields));
                 return { success: true };
             }
-        } catch (error) {
-            console.warn('Supabase 儲存表單欄位配置失敗，使用 localStorage:', error);
         }
+    } catch (error) {
+        console.warn('Supabase 儲存表單欄位配置失敗，使用 localStorage:', error);
     }
     
     // 儲存到 localStorage
@@ -202,9 +206,10 @@ async function getFieldTemplates() {
     const storageKey = 'admin_field_templates';
     
     // 嘗試從 Supabase 讀取
-    if (typeof supabase !== 'undefined' && supabase) {
-        try {
-            const { data, error } = await supabase
+    try {
+        const client = initSupabase();
+        if (client) {
+            const { data, error } = await client
                 .from('admin_config')
                 .select('*')
                 .eq('config_type', 'field_templates')
@@ -216,9 +221,9 @@ async function getFieldTemplates() {
                 localStorage.setItem(storageKey, JSON.stringify(templates));
                 return templates;
             }
-        } catch (error) {
-            console.warn('Supabase 讀取欄位模板失敗，使用 localStorage:', error);
         }
+    } catch (error) {
+        console.warn('Supabase 讀取欄位模板失敗，使用 localStorage:', error);
     }
     
     // 從 localStorage 讀取
@@ -275,10 +280,11 @@ async function saveFieldTemplates(templates) {
     const storageKey = 'admin_field_templates';
     
     // 嘗試儲存到 Supabase
-    if (typeof supabase !== 'undefined' && supabase) {
-        try {
+    try {
+        const client = initSupabase();
+        if (client) {
             // 先刪除舊配置
-            await supabase
+            await client
                 .from('admin_config')
                 .delete()
                 .eq('config_type', 'field_templates');
@@ -289,7 +295,7 @@ async function saveFieldTemplates(templates) {
                 config_data: template
             }));
             
-            const { error } = await supabase
+            const { error } = await client
                 .from('admin_config')
                 .insert(configData);
             
@@ -298,9 +304,9 @@ async function saveFieldTemplates(templates) {
                 localStorage.setItem(storageKey, JSON.stringify(templates));
                 return { success: true };
             }
-        } catch (error) {
-            console.warn('Supabase 儲存欄位模板失敗，使用 localStorage:', error);
         }
+    } catch (error) {
+        console.warn('Supabase 儲存欄位模板失敗，使用 localStorage:', error);
     }
     
     // 儲存到 localStorage
