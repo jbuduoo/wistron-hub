@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>緯創分享平台</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- 頂部導航欄 -->
+    <header class="header">
+        <div class="header-left">
+            <div class="logo">
+                <h1>Wistron Share</h1>
+                <span class="logo-subtitle">緯創分享平台</span>
+            </div>
+        </div>
+        <div class="header-center">
+            <div class="search-box">
+                <input type="text" placeholder="搜尋最新消息、影片、文章、建議、作品、職缺或內部專家..." id="searchInput">
+                <button class="search-btn" title="搜尋">🔍</button>
+            </div>
+        </div>
+        <div class="header-right">
+            <button class="upload-btn" onclick="window.location.href='upload.html'">📤 上傳內容</button>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- 側邊欄 -->
+        <aside class="sidebar">
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item active" data-filter="news">
+                    <span class="nav-icon">📢</span> 最新消息
+                </a>
+                <a href="#" class="nav-item" data-filter="all">
+                    <span class="nav-icon">🏆</span> 2025黑客松競賽
+                </a>
+                <a href="#" class="nav-item" data-filter="video">
+                    <span class="nav-icon">🎬</span> 影片分享
+                </a>
+                <a href="#" class="nav-item" data-filter="article">
+                    <span class="nav-icon">📄</span> 文章分享
+                </a>
+                <a href="#" class="nav-item" data-filter="suggestion">
+                    <span class="nav-icon">💭</span> 建議提案
+                </a>
+                <a href="#" class="nav-item" data-filter="project">
+                    <span class="nav-icon">💻</span> 作品分享
+                </a>
+                <a href="#" class="nav-item" data-filter="job">
+                    <span class="nav-icon">💼</span> 職缺分享
+                </a>
+                <a href="#" class="nav-item" data-filter="expert">
+                    <span class="nav-icon">🤝</span> 找內部專家
+                </a>
+            </nav>
+        </aside>
+
+        <!-- 主要內容區 -->
+        <main class="main-content">
+            <div class="content-header">
+                <h2 id="contentTitle">最新消息</h2>
+                <div class="sort-options">
+                    <select id="sortSelect">
+                        <option value="newest">最新發布</option>
+                        <option value="popular">最受歡迎</option>
+                        <option value="reward">認證等級</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- 內容網格 -->
+            <div class="content-grid" id="contentGrid">
+                <!-- 內容卡片將由 JavaScript 動態生成 -->
+            </div>
+
+            <!-- 空狀態 -->
+            <div class="empty-state" id="emptyState" style="display: none;">
+                <p>目前還沒有最新消息，成為第一個發布的人吧！</p>
+                <button class="btn-primary" onclick="window.location.href='upload.html'">立即上傳</button>
+            </div>
+        </main>
+    </div>
+
+    <script src="config.js"></script>
+    <script src="github-api.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
+

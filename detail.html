@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>內容詳情 - 緯創分享平台</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- 頂部導航欄 -->
+    <header class="header">
+        <div class="header-left">
+            <div class="logo">
+                <a href="index.html" style="text-decoration: none; color: inherit; display: flex; flex-direction: column;">
+                    <h1>Wistron Share</h1>
+                    <span class="logo-subtitle">緯創分享平台</span>
+                </a>
+            </div>
+        </div>
+        <div class="header-right">
+            <button class="btn-secondary" onclick="window.location.href='index.html'">返回首頁</button>
+        </div>
+    </header>
+
+    <div class="container">
+        <main class="detail-container">
+            <!-- 內容區域 -->
+            <div class="detail-content">
+                <!-- 媒體區域 -->
+                <div class="media-section" id="mediaSection">
+                    <!-- 將由 JavaScript 動態生成 -->
+                </div>
+
+                <!-- 資訊區域 -->
+                <div class="info-section">
+                    <h1 id="detailTitle"></h1>
+                    
+                    <div class="meta-info">
+                        <span class="meta-item">
+                            <span class="meta-icon">📅</span>
+                            <span class="meta-label">發布時間 :</span>
+                            <span class="meta-value" id="detailDate"></span>
+                        </span>
+                        <span class="meta-item">
+                            <span class="meta-icon">👤</span>
+                            <span class="meta-label">發表人 :</span>
+                            <span class="meta-value" id="detailAuthor"></span>
+                        </span>
+                        <span class="meta-item">
+                            <span class="meta-icon">👁️</span>
+                            <span class="meta-value" id="detailViews">0</span>
+                            <span class="meta-label">觀看</span>
+                        </span>
+                        <span class="meta-item">
+                            <span class="meta-icon">👍</span>
+                            <span class="meta-value" id="detailLikes">0</span>
+                            <span class="meta-label">讚</span>
+                        </span>
+                    </div>
+
+                    <!-- 獎勵徽章 -->
+                    <div class="reward-badge" id="rewardBadge" style="display: none;">
+                        <span class="badge-icon">🏆</span>
+                        <span class="badge-text" id="badgeText"></span>
+                    </div>
+
+                    <!-- 描述 -->
+                    <div class="description">
+                        <h3>內容描述</h3>
+                        <p id="detailDescription"></p>
+                    </div>
+
+                    <!-- 互動按鈕 -->
+                    <div class="action-buttons">
+                        <button class="action-btn" id="likeBtn" onclick="toggleLike()">
+                            <span>👍</span> 讚
+                        </button>
+                        <button class="action-btn" onclick="shareContent()">
+                            <span>📤</span> 分享
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 留言區域 -->
+            <div class="comments-section">
+                <div class="comments-header">
+                    <h3 id="commentsCount">0 則留言</h3>
+                    <div class="sort-comments">
+                        <select id="sortComments">
+                            <option value="newest">最新</option>
+                            <option value="oldest">最舊</option>
+                            <option value="popular">最受歡迎</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- 留言輸入框 -->
+                <div class="comment-input-area">
+                    <div class="comment-avatar">
+                        <span id="userInitial">👤</span>
+                    </div>
+                    <div class="comment-input-wrapper">
+                        <input type="text" id="commentInput" placeholder="發表留言..." class="comment-input">
+                        <button class="comment-submit-btn" onclick="submitComment()">留言</button>
+                    </div>
+                </div>
+
+                <!-- 留言列表 -->
+                <div class="comments-list" id="commentsList">
+                    <!-- 留言將由 JavaScript 動態生成 -->
+                </div>
+
+                <!-- 空狀態 -->
+                <div class="no-comments" id="noComments" style="display: none;">
+                    <p>目前還沒有留言，成為第一個留言的人吧！</p>
+                </div>
+            </div>
+
+            <!-- 相關內容推薦 -->
+            <div class="related-section">
+                <h3>相關內容</h3>
+                <div class="related-grid" id="relatedGrid">
+                    <!-- 將由 JavaScript 動態生成 -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="config.js"></script>
+    <script src="github-api.js"></script>
+    <script src="script.js"></script>
+    <script>
+        // 從 URL 參數獲取內容 ID
+        const urlParams = new URLSearchParams(window.location.search);
+        const contentId = urlParams.get('id');
+
+        // 載入內容詳情
+        async function loadContentDetail() {
+            const contents = await loadDataFromGitHub();
+            const content = contents.find(c => c.id === contentId);
+
+            if (!content) {
+                document.querySelector('.detail-container').innerHTML = '<p>找不到此內容</p>';
+                return;
+            }
+
+            // 更新觀看數
+            content.views = (content.views || 0) + 1;
+            // 更新到 GitHub（非同步，不等待完成）
+            updateContentInGitHub(contentId, { views: content.views }).catch(err => {
+                console.error('更新觀看數失敗:', err);
+            });
+
+            // 顯示內容
+            document.getElementById('detailTitle').textContent = content.title;
+            document.getElementById('detailAuthor').textContent = content.author;
+            document.getElementById('detailDate').textContent = formatDate(content.createdAt);
+            document.getElementById('detailViews').textContent = content.views || 0;
+            document.getElementById('detailLikes').textContent = content.likes || 0;
+            document.getElementById('detailDescription').textContent = content.description;
+
+            // 顯示媒體
+            const mediaSection = document.getElementById('mediaSection');
+            // 如果是最新消息，隱藏媒體區域
+            if (content.type === 'news') {
+                mediaSection.style.display = 'none';
+            } else if (content.type === 'video' && content.fileUrl) {
+                mediaSection.style.display = 'block';
+                mediaSection.innerHTML = `
+                    <video controls style="width: 100%; border-radius: 12px;">
+                        <source src="${content.fileUrl}" type="video/mp4">
+                        您的瀏覽器不支援影片播放。
+                    </video>
+                `;
+            } else if (content.fileUrl && content.fileUrl.match(/\.(jpg|jpeg|png|gif)$/i)) {
+                mediaSection.style.display = 'block';
+                mediaSection.innerHTML = `
+                    <img src="${content.fileUrl}" style="width: 100%; border-radius: 12px;" alt="${content.title}">
+                `;
+            } else if (content.type === 'project' && content.githubLink) {
+                mediaSection.style.display = 'block';
+                mediaSection.innerHTML = `
+                    <div class="project-preview">
+                        <div class="github-card">
+                            <div class="github-icon">💻</div>
+                            <h3>GitHub 專案</h3>
+                            <p class="github-link-text">${content.githubLink}</p>
+                            <a href="${content.githubLink}" target="_blank" class="github-btn">
+                                <span>🔗</span> 前往 GitHub
+                            </a>
+                        </div>
+                    </div>
+                `;
+            } else if (content.type === 'expert') {
+                // 找內部專家也隱藏媒體區域
+                mediaSection.style.display = 'none';
+            } else {
+                mediaSection.style.display = 'block';
+                mediaSection.innerHTML = `
+                    <div class="placeholder-media">
+                        <span class="placeholder-icon">${content.type === 'video' ? '🎬' : content.type === 'article' ? '📄' : content.type === 'project' ? '💻' : '💭'}</span>
+                        <p>${content.type === 'video' ? '影片分享' : content.type === 'article' ? '文章分享' : content.type === 'project' ? '作品分享' : '建議提案'}</p>
+                    </div>
+                `;
+            }
+
+            // 如果是官方公告，添加特殊標記
+            if (content.isOfficial) {
+                const infoSection = document.querySelector('.info-section');
+                const officialBadge = document.createElement('div');
+                officialBadge.className = 'official-announcement-badge';
+                officialBadge.innerHTML = '<span>📢</span> 官方公告';
+                infoSection.insertBefore(officialBadge, infoSection.firstChild);
+            }
+
+            // 如果是最新消息，顯示時間資訊
+            if (content.type === 'news') {
+                const metaInfo = document.querySelector('.meta-info');
+                if (content.startDate || content.endDate) {
+                    const timeInfo = document.createElement('div');
+                    timeInfo.className = 'news-time-info';
+                    let timeHTML = '<div class="time-info-row">';
+                    if (content.startDate) {
+                        timeHTML += `<div class="time-item"><span class="time-label">⏰ 開始時間：</span><span class="time-value">${formatNewsDate(content.startDate)}</span></div>`;
+                    }
+                    if (content.endDate) {
+                        timeHTML += `<div class="time-item"><span class="time-label">🏁 結束時間：</span><span class="time-value">${formatNewsDate(content.endDate)}</span></div>`;
+                    }
+                    timeHTML += '</div>';
+                    timeInfo.innerHTML = timeHTML;
+                    metaInfo.parentNode.insertBefore(timeInfo, metaInfo.nextSibling);
+                }
+            }
+
+            // 如果是職缺，顯示職缺詳細資訊
+            if (content.type === 'job') {
+                const descriptionDiv = document.querySelector('.description');
+                let jobInfoHTML = '<div class="job-details">';
+                jobInfoHTML += '<div class="job-detail-item"><span class="detail-label">📍 工作地點：</span><span class="detail-value">' + content.jobLocation + '</span></div>';
+                if (content.jobDepartment) {
+                    jobInfoHTML += '<div class="job-detail-item"><span class="detail-label">🏢 部門：</span><span class="detail-value">' + content.jobDepartment + '</span></div>';
+                }
+                if (content.jobType) {
+                    jobInfoHTML += '<div class="job-detail-item"><span class="detail-label">⏰ 職務類型：</span><span class="detail-value">' + content.jobType + '</span></div>';
+                }
+                if (content.jobSalary) {
+                    jobInfoHTML += '<div class="job-detail-item"><span class="detail-label">💰 薪資範圍：</span><span class="detail-value">' + content.jobSalary + '</span></div>';
+                }
+                if (content.jobRequirements) {
+                    jobInfoHTML += '<div class="job-detail-item job-requirements"><span class="detail-label">📋 職務要求：</span><div class="detail-value">' + content.jobRequirements.replace(/\n/g, '<br>') + '</div></div>';
+                }
+                if (content.jobContact) {
+                    jobInfoHTML += '<div class="job-detail-item job-contact"><span class="detail-label">📞 聯絡方式：</span><span class="detail-value">' + content.jobContact + '</span></div>';
+                }
+                jobInfoHTML += '</div>';
+                
+                const jobInfoDiv = document.createElement('div');
+                jobInfoDiv.className = 'job-info-section';
+                jobInfoDiv.innerHTML = jobInfoHTML;
+                descriptionDiv.parentNode.insertBefore(jobInfoDiv, descriptionDiv);
+            }
+
+            // 顯示獎勵徽章
+            if (content.reward) {
+                const badge = document.getElementById('rewardBadge');
+                const badgeText = document.getElementById('badgeText');
+                badge.style.display = 'flex';
+                
+                if (content.reward === 'gold') {
+                    badge.classList.add('gold');
+                    badgeText.textContent = '🏅 金牌獎勵';
+                } else if (content.reward === 'silver') {
+                    badge.classList.add('silver');
+                    badgeText.textContent = '🥈 銀牌獎勵';
+                } else if (content.reward === 'bronze') {
+                    badge.classList.add('bronze');
+                    badgeText.textContent = '🥉 銅牌獎勵';
+                }
+            }
+
+            // 載入相關內容
+            loadRelatedContent(content);
+            
+            // 載入留言
+            loadComments();
+            
+            // 載入相關內容
+            loadRelatedContent(content);
+        }
+
+        async function loadRelatedContent(currentContent) {
+            const contents = await loadDataFromGitHub();
+            const related = contents
+                .filter(c => c.id !== currentContent.id && c.type === currentContent.type)
+                .slice(0, 5);
+
+            const relatedGrid = document.getElementById('relatedGrid');
+            if (related.length === 0) {
+                relatedGrid.innerHTML = '<p>暫無相關內容</p>';
+                return;
+            }
+
+            relatedGrid.innerHTML = related.map((content, index) => {
+                const patternClass = getRandomPattern(index);
+                const colorClass = getRandomColor(index);
+                return `
+                <div class="content-card" onclick="window.location.href='detail.html?id=${content.id}'">
+                    <div class="card-thumbnail">
+                        ${content.fileUrl ? `<img src="${content.fileUrl}" alt="${content.title}">` : 
+                          `<div class="placeholder-thumbnail ${patternClass} ${colorClass}">${content.type === 'video' ? '🎬' : content.type === 'article' ? '📄' : content.type === 'project' ? '💻' : '💭'}</div>`}
+                    </div>
+                    <div class="card-info">
+                        <h4>${content.title}</h4>
+                        <p class="card-author">${content.author}</p>
+                        <div class="card-stats">
+                            <span>👁️ ${content.views || 0}</span>
+                            ${content.reward ? `<span class="reward-indicator">🏆</span>` : ''}
+                        </div>
+                    </div>
+                </div>
+            `;
+            }).join('');
+        }
+
+        function getRandomPattern(index) {
+            const patterns = ['pattern-dots', 'pattern-lines', 'pattern-grid', 'pattern-circles', 'pattern-diagonal'];
+            return patterns[index % patterns.length];
+        }
+
+        function getRandomColor(index) {
+            const colors = ['color-blue', 'color-purple', 'color-green', 'color-orange', 'color-pink', 'color-teal'];
+            return colors[index % colors.length];
+        }
+
+        async function toggleLike() {
+            const contents = await loadDataFromGitHub();
+            const content = contents.find(c => c.id === contentId);
+            
+            if (content) {
+                content.likes = (content.likes || 0) + 1;
+                document.getElementById('detailLikes').textContent = content.likes;
+                
+                const likeBtn = document.getElementById('likeBtn');
+                likeBtn.style.opacity = '0.6';
+                likeBtn.disabled = true;
+                
+                // 更新到 GitHub
+                try {
+                    await updateContentInGitHub(contentId, { likes: content.likes });
+                } catch (error) {
+                    console.error('更新按讚數失敗:', error);
+                }
+            }
+        }
+
+        function shareContent() {
+            const url = window.location.href;
+            if (navigator.share) {
+                navigator.share({
+                    title: document.getElementById('detailTitle').textContent,
+                    url: url
+                });
+            } else {
+                navigator.clipboard.writeText(url);
+                alert('連結已複製到剪貼簿！');
+            }
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            const year = date.getFullYear();
+            const month = date.getMonth() + 1;
+            const day = date.getDate();
+            const hours = date.getHours();
+            const minutes = date.getMinutes();
+            
+            // 轉換為中文日期格式
+            const monthNames = ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'];
+            const monthName = monthNames[month - 1];
+            
+            // 判斷上午/下午
+            const period = hours >= 12 ? '下午' : '上午';
+            const displayHours = hours > 12 ? hours - 12 : (hours === 0 ? 12 : hours);
+            const displayMinutes = minutes.toString().padStart(2, '0');
+            
+            return `${year}年${month}月${day}日${period}${displayHours}:${displayMinutes}`;
+        }
+
+        function formatNewsDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('zh-TW', { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        function formatCommentDate(dateString) {
+            const date = new Date(dateString);
+            const now = new Date();
+            const diffTime = Math.abs(now - date);
+            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+            
+            if (diffDays === 0) {
+                return '今天';
+            } else if (diffDays === 1) {
+                return '1天前';
+            } else if (diffDays < 7) {
+                return `${diffDays}天前`;
+            } else if (diffDays < 30) {
+                const weeks = Math.floor(diffDays / 7);
+                return `${weeks}週前`;
+            } else {
+                return date.toLocaleDateString('zh-TW', { 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                });
+            }
+        }
+
+        // 載入留言
+        function loadComments() {
+            const comments = JSON.parse(localStorage.getItem(`comments_${contentId}`) || '[]');
+            const sortType = document.getElementById('sortComments').value;
+            
+            let sortedComments = [...comments];
+            if (sortType === 'newest') {
+                sortedComments.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+            } else if (sortType === 'oldest') {
+                sortedComments.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+            } else if (sortType === 'popular') {
+                sortedComments.sort((a, b) => (b.likes || 0) - (a.likes || 0));
+            }
+
+            const commentsList = document.getElementById('commentsList');
+            const noComments = document.getElementById('noComments');
+            const commentsCount = document.getElementById('commentsCount');
+
+            commentsCount.textContent = `${comments.length} 則留言`;
+
+            if (sortedComments.length === 0) {
+                commentsList.style.display = 'none';
+                noComments.style.display = 'block';
+                return;
+            }
+
+            commentsList.style.display = 'block';
+            noComments.style.display = 'none';
+
+            commentsList.innerHTML = sortedComments.map(comment => `
+                <div class="comment-item">
+                    <div class="comment-avatar-small">
+                        <span>${getUserInitial(comment.author)}</span>
+                    </div>
+                    <div class="comment-content">
+                        <div class="comment-header">
+                            <span class="comment-author">${comment.author}</span>
+                            <span class="comment-date">${formatCommentDate(comment.createdAt)}</span>
+                        </div>
+                        <div class="comment-text">${escapeHtml(comment.text)}</div>
+                        <div class="comment-actions">
+                            <button class="comment-action-btn" onclick="likeComment('${comment.id}')">
+                                <span>👍</span> ${comment.likes || 0}
+                            </button>
+                            <button class="comment-action-btn" onclick="replyComment('${comment.id}', '${comment.author}')">
+                                回覆
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 提交留言
+        function submitComment() {
+            const input = document.getElementById('commentInput');
+            const text = input.value.trim();
+            
+            if (!text) {
+                alert('請輸入留言內容');
+                return;
+            }
+
+            const comment = {
+                id: Date.now().toString(),
+                author: getCurrentUser(),
+                text: text,
+                likes: 0,
+                createdAt: new Date().toISOString()
+            };
+
+            const comments = JSON.parse(localStorage.getItem(`comments_${contentId}`) || '[]');
+            comments.push(comment);
+            localStorage.setItem(`comments_${contentId}`, JSON.stringify(comments));
+
+            input.value = '';
+            loadComments();
+        }
+
+        // 點讚留言
+        function likeComment(commentId) {
+            const comments = JSON.parse(localStorage.getItem(`comments_${contentId}`) || '[]');
+            const comment = comments.find(c => c.id === commentId);
+            
+            if (comment) {
+                comment.likes = (comment.likes || 0) + 1;
+                localStorage.setItem(`comments_${contentId}`, JSON.stringify(comments));
+                loadComments();
+            }
+        }
+
+        // 回覆留言
+        function replyComment(commentId, authorName) {
+            const input = document.getElementById('commentInput');
+            input.value = `@${authorName} `;
+            input.focus();
+        }
+
+        // 獲取當前用戶（簡化版，實際應該從登入系統獲取）
+        function getCurrentUser() {
+            let user = localStorage.getItem('currentUser');
+            if (!user) {
+                user = '訪客' + Math.floor(Math.random() * 1000);
+                localStorage.setItem('currentUser', user);
+            }
+            return user;
+        }
+
+        // 獲取用戶名稱首字
+        function getUserInitial(name) {
+            if (name && name.length > 0) {
+                return name.charAt(0).toUpperCase();
+            }
+            return '👤';
+        }
+
+        // HTML 轉義
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // 留言輸入框 Enter 鍵提交
+        document.addEventListener('DOMContentLoaded', function() {
+            const commentInput = document.getElementById('commentInput');
+            if (commentInput) {
+                commentInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        submitComment();
+                    }
+                });
+            }
+
+            const sortComments = document.getElementById('sortComments');
+            if (sortComments) {
+                sortComments.addEventListener('change', function() {
+                    loadComments();
+                });
+            }
+        });
+
+        // 頁面載入時執行
+        if (contentId) {
+            loadContentDetail();
+        } else {
+            document.querySelector('.detail-container').innerHTML = '<p>無效的內容 ID</p>';
+        }
+    </script>
+</body>
+</html>
+

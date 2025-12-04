@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>上傳內容 - 緯創分享平台</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- 頂部導航欄 -->
+    <header class="header">
+        <div class="header-left">
+            <div class="logo">
+                <a href="index.html" style="text-decoration: none; color: inherit; display: flex; flex-direction: column;">
+                    <h1>Wistron Share</h1>
+                    <span class="logo-subtitle">緯創分享平台</span>
+                </a>
+            </div>
+        </div>
+        <div class="header-right">
+            <button class="btn-secondary" onclick="window.location.href='index.html'">返回首頁</button>
+        </div>
+    </header>
+
+    <div class="container">
+        <main class="upload-container">
+            <div class="upload-card">
+                <h2>上傳內容</h2>
+                <p class="subtitle">分享您的影片、文章或建議，符合規範即可獲得獎勵認證</p>
+
+                <form id="uploadForm" class="upload-form">
+                    <!-- 內容類型選擇 -->
+                    <div class="form-group">
+                        <label>內容類型 <span class="required">*</span></label>
+                        <div class="type-selector">
+                            <label class="type-option">
+                                <input type="radio" name="contentType" value="news" required>
+                                <div class="type-card">
+                                    <span class="type-icon">📢</span>
+                                    <span>最新消息</span>
+                                </div>
+                            </label>
+                            <label class="type-option">
+                                <input type="radio" name="contentType" value="video" required>
+                                <div class="type-card">
+                                    <span class="type-icon">🎬</span>
+                                    <span>影片分享</span>
+                                </div>
+                            </label>
+                            <label class="type-option">
+                                <input type="radio" name="contentType" value="article" required>
+                                <div class="type-card">
+                                    <span class="type-icon">📄</span>
+                                    <span>文章分享</span>
+                                </div>
+                            </label>
+                            <label class="type-option">
+                                <input type="radio" name="contentType" value="suggestion" required>
+                                <div class="type-card">
+                                    <span class="type-icon">💭</span>
+                                    <span>建議提案</span>
+                                </div>
+                            </label>
+                            <label class="type-option">
+                                <input type="radio" name="contentType" value="project" required>
+                                <div class="type-card">
+                                    <span class="type-icon">💻</span>
+                                    <span>作品分享</span>
+                                </div>
+                            </label>
+                            <label class="type-option">
+                                <input type="radio" name="contentType" value="job" required>
+                                <div class="type-card">
+                                    <span class="type-icon">💼</span>
+                                    <span>職缺分享</span>
+                                </div>
+                            </label>
+                            <label class="type-option">
+                                <input type="radio" name="contentType" value="expert" required>
+                                <div class="type-card">
+                                    <span class="type-icon">🤝</span>
+                                    <span>找內部專家</span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- 標題 -->
+                    <div class="form-group">
+                        <label for="title">標題 <span class="required">*</span></label>
+                        <input type="text" id="title" name="title" required placeholder="輸入標題...">
+                    </div>
+
+                    <!-- 作者 -->
+                    <div class="form-group">
+                        <label for="author">作者名稱 <span class="required">*</span></label>
+                        <input type="text" id="author" name="author" required placeholder="輸入您的姓名...">
+                    </div>
+
+                    <!-- 時間資訊（最新消息專用） -->
+                    <div class="form-group" id="newsTimeGroup" style="display: none;">
+                        <div class="form-row">
+                            <div class="form-group-half">
+                                <label for="startDate">開始時間</label>
+                                <input type="datetime-local" id="startDate" name="startDate">
+                            </div>
+                            <div class="form-group-half">
+                                <label for="endDate">結束時間</label>
+                                <input type="datetime-local" id="endDate" name="endDate">
+                            </div>
+                        </div>
+                        <small class="form-hint">可選填，用於標註活動或公告的有效期間</small>
+                    </div>
+
+                    <!-- 描述 -->
+                    <div class="form-group">
+                        <label for="description">描述/內容 <span class="required">*</span></label>
+                        <textarea id="description" name="description" rows="6" required placeholder="輸入內容描述或文章內容..."></textarea>
+                    </div>
+
+                    <!-- GitHub 連結（作品分享專用） -->
+                    <div class="form-group" id="githubLinkGroup" style="display: none;">
+                        <label for="githubLink">GitHub 連結 <span class="required">*</span></label>
+                        <input type="url" id="githubLink" name="githubLink" placeholder="https://github.com/username/repository">
+                        <small class="form-hint">請輸入您的 GitHub 專案連結</small>
+                    </div>
+
+                    <!-- 職缺資訊（職缺分享專用） -->
+                    <div class="form-group" id="jobInfoGroup" style="display: none;">
+                        <div class="job-info-notice">
+                            <span class="notice-icon">👤</span>
+                            <span>此功能僅限人資部門使用</span>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group-half">
+                                <label for="jobLocation">工作地點 <span class="required">*</span></label>
+                                <input type="text" id="jobLocation" name="jobLocation" placeholder="例如：台北、新竹、台中、高雄...">
+                            </div>
+                            <div class="form-group-half">
+                                <label for="jobType">職務類型 <span class="required">*</span></label>
+                                <select id="jobType" name="jobType">
+                                    <option value="">請選擇</option>
+                                    <option value="全職">全職</option>
+                                    <option value="兼職">兼職</option>
+                                    <option value="約聘">約聘</option>
+                                    <option value="駐點">駐點</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group-half">
+                                <label for="jobDepartment">部門 <span class="required">*</span></label>
+                                <input type="text" id="jobDepartment" name="jobDepartment" placeholder="例如：技術部、業務部、行銷部...">
+                            </div>
+                            <div class="form-group-half">
+                                <label for="jobSalary">薪資範圍</label>
+                                <input type="text" id="jobSalary" name="jobSalary" placeholder="例如：40,000-60,000 或 面議">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="jobRequirements">職務要求 <span class="required">*</span></label>
+                            <textarea id="jobRequirements" name="jobRequirements" rows="4" placeholder="請輸入職務要求，例如：學歷、經驗、技能等..."></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="jobContact">聯絡方式 <span class="required">*</span></label>
+                            <input type="text" id="jobContact" name="jobContact" placeholder="例如：hr@wistron.com 或 分機 1234">
+                        </div>
+                    </div>
+
+                    <!-- 檔案上傳 -->
+                    <div class="form-group" id="fileUploadGroup">
+                        <label for="file">上傳檔案</label>
+                        <div class="file-upload">
+                            <input type="file" id="file" name="file" accept="video/*,image/*">
+                            <label for="file" class="file-label">
+                                <span class="file-icon">📎</span>
+                                <span class="file-text">選擇檔案（影片或圖片）</span>
+                            </label>
+                            <div class="file-preview" id="filePreview"></div>
+                        </div>
+                    </div>
+
+                    <!-- 競賽標記 -->
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="isHackathon" name="isHackathon">
+                            <span style="margin-left: 0.5rem;">標記為 2025黑客松競賽相關內容</span>
+                        </label>
+                        <small class="form-hint">勾選此選項後，內容將顯示在「2025黑客松競賽」分類中</small>
+                    </div>
+
+                    <!-- 規範提示 -->
+                    <div class="guidelines">
+                        <h3>📋 內容規範與獎勵標準</h3>
+                        <ul>
+                            <li>內容需符合公司價值觀與行為規範</li>
+                            <li>影片長度建議不超過 10 分鐘，品質清晰</li>
+                            <li>文章字數建議 200-2000 字，內容充實</li>
+                            <li>建議需具體且具建設性，包含可行方案</li>
+                            <li>符合規範的內容將獲得認證徽章（金/銀/銅牌）</li>
+                            <li>優質內容將獲得額外獎勵與推廣</li>
+                        </ul>
+                    </div>
+
+                    <!-- 提交按鈕 -->
+                    <div class="form-actions">
+                        <button type="button" class="btn-secondary" onclick="window.location.href='index.html'">取消</button>
+                        <button type="submit" class="btn-primary">提交內容</button>
+                    </div>
+                </form>
+            </div>
+        </main>
+    </div>
+
+    <script src="config.js"></script>
+    <script src="github-api.js"></script>
+    <script src="script.js"></script>
+    <script>
+        // 檔案預覽功能
+        document.getElementById('file').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            const preview = document.getElementById('filePreview');
+            
+            if (file) {
+                preview.innerHTML = `<p>已選擇：${file.name}</p>`;
+                
+                if (file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        preview.innerHTML += `<img src="${e.target.result}" style="max-width: 200px; margin-top: 10px; border-radius: 8px;">`;
+                    };
+                    reader.readAsDataURL(file);
+                }
+            } else {
+                preview.innerHTML = '';
+            }
+        });
+
+        // 表單提交
+        document.getElementById('uploadForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const contentType = formData.get('contentType');
+            const title = formData.get('title');
+            const author = formData.get('author');
+            const description = formData.get('description');
+            const file = formData.get('file');
+            const githubLink = formData.get('githubLink');
+            const isHackathon = document.getElementById('isHackathon').checked;
+            
+            // 最新消息時間欄位
+            const startDate = formData.get('startDate');
+            const endDate = formData.get('endDate');
+            
+            // 職缺相關欄位
+            const jobLocation = formData.get('jobLocation');
+            const jobType = formData.get('jobType');
+            const jobDepartment = formData.get('jobDepartment');
+            const jobSalary = formData.get('jobSalary');
+            const jobRequirements = formData.get('jobRequirements');
+            const jobContact = formData.get('jobContact');
+
+            // 驗證作品分享必須有 GitHub 連結
+            if (contentType === 'project' && !githubLink) {
+                alert('作品分享必須提供 GitHub 連結！');
+                return;
+            }
+
+            // 驗證職缺分享必須填寫所有必填欄位
+            if (contentType === 'job') {
+                if (!jobLocation || !jobDepartment || !jobRequirements || !jobContact) {
+                    alert('職缺分享必須填寫所有必填欄位！');
+                    return;
+                }
+            }
+
+            // 創建內容物件
+            const content = {
+                id: Date.now().toString(),
+                type: contentType,
+                title: title,
+                author: author,
+                description: description,
+                file: file ? file.name : null,
+                fileUrl: file ? URL.createObjectURL(file) : null,
+                githubLink: githubLink || null,
+                isHackathon: isHackathon,
+                // 最新消息時間
+                startDate: startDate ? new Date(startDate).toISOString() : null,
+                endDate: endDate ? new Date(endDate).toISOString() : null,
+                // 職缺資訊
+                jobLocation: jobLocation || null,
+                jobType: jobType || null,
+                jobDepartment: jobDepartment || null,
+                jobSalary: jobSalary || null,
+                jobRequirements: jobRequirements || null,
+                jobContact: jobContact || null,
+                isHR: contentType === 'job', // 標記為人資發布
+                views: 0,
+                likes: 0,
+                reward: null, // 待審核
+                createdAt: new Date().toISOString()
+            };
+
+            // 儲存到 GitHub
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalText = submitBtn.textContent;
+            submitBtn.disabled = true;
+            submitBtn.textContent = '提交中...';
+
+            try {
+                const result = await addContentToGitHub(content);
+                
+                if (result.success) {
+                    alert('內容提交成功！管理員將審核您的內容，符合規範即可獲得認證徽章。');
+                    window.location.href = 'index.html';
+                } else {
+                    alert(`提交時發生問題：${result.message}\n\n${result.fallback ? '資料已儲存到本地，請稍後再試。' : ''}`);
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = originalText;
+                }
+            } catch (error) {
+                console.error('提交失敗:', error);
+                alert(`提交失敗：${error.message}\n\n請檢查網路連線或 GitHub 設定。`);
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
+            }
+        });
+    </script>
+</body>
+</html>
+
