@@ -604,8 +604,7 @@ async function getUserPoints(usernameOrName) {
         const client = initSupabase();
         if (!client) {
             // 使用 localStorage 作為備援
-            const users = JSON.parse(localStorage.getItem('users') || '{}');
-            return users[usernameOrName]?.points || 0;
+            return getUserPointsFromLocalStorage(usernameOrName);
         }
 
         // 先嘗試用 username 查詢（新系統）
@@ -613,15 +612,16 @@ async function getUserPoints(usernameOrName) {
             .from('users')
             .select('points')
             .eq('username', usernameOrName)
-            .single();
+            .maybeSingle(); // 使用 maybeSingle 而不是 single，避免 406 錯誤
 
         // 如果找不到，嘗試用 name 查詢（舊系統兼容）
-        if (error && error.code === 'PGRST116') {
+        if ((error || !data) && error?.code !== 'PGRST116') {
+            // 只有在不是「找不到記錄」的錯誤時才嘗試 name 查詢
             const { data: nameData, error: nameError } = await client
                 .from('users')
                 .select('points')
                 .eq('name', usernameOrName)
-                .single();
+                .maybeSingle();
             
             if (!nameError && nameData) {
                 data = nameData;
@@ -629,20 +629,56 @@ async function getUserPoints(usernameOrName) {
             }
         }
 
-        if (error) {
-            if (error.code === 'PGRST116') {
-                // 用戶不存在，返回 0
-                return 0;
-            }
-            throw error;
+        // 如果查詢成功且有數據，返回積分
+        if (!error && data) {
+            return data?.points || 0;
         }
 
-        return data?.points || 0;
+        // 如果查詢失敗（包括 406 錯誤），使用 localStorage 備援
+        if (error) {
+            console.warn('Supabase 查詢用戶積分失敗，使用 localStorage 備援:', error);
+            return getUserPointsFromLocalStorage(usernameOrName);
+        }
+
+        // 用戶不存在，返回 0
+        return 0;
     } catch (error) {
-        console.error('取得用戶積分失敗:', error);
+        console.warn('取得用戶積分失敗，使用 localStorage 備援:', error);
         // 使用 localStorage 作為備援
-        const users = JSON.parse(localStorage.getItem('users') || '{}');
-        return users[usernameOrName]?.points || 0;
+        return getUserPointsFromLocalStorage(usernameOrName);
+    }
+}
+
+// 從 localStorage 獲取用戶積分（輔助函數）
+function getUserPointsFromLocalStorage(usernameOrName) {
+    try {
+        // 嘗試從 users 數組中查找
+        const usersStr = localStorage.getItem('users');
+        if (usersStr) {
+            const users = JSON.parse(usersStr);
+            if (Array.isArray(users)) {
+                const user = users.find(u => u.username === usernameOrName || u.name === usernameOrName);
+                if (user) {
+                    return user.points || 0;
+                }
+            } else if (typeof users === 'object' && users !== null) {
+                // 舊格式：users 是對象
+                return users[usernameOrName]?.points || 0;
+            }
+        }
+        
+        // 嘗試從 currentUser 獲取（如果是當前登入用戶）
+        if (typeof Auth !== 'undefined' && Auth.isLoggedIn()) {
+            const currentUser = Auth.getCurrentUser();
+            if (currentUser && (currentUser.username === usernameOrName || currentUser.name === usernameOrName)) {
+                return currentUser.points || 0;
+            }
+        }
+        
+        return 0;
+    } catch (error) {
+        console.warn('從 localStorage 讀取用戶積分失敗:', error);
+        return 0;
     }
 }
 
