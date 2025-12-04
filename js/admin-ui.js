@@ -316,13 +316,6 @@ async function renderFormFields() {
                 <div class="content-type-header" onclick="toggleContentTypeFields('${type}')">
                     <strong>${typeLabels[type]}</strong>
                     <span>(${sortedFields.length} 個欄位)</span>
-                    <div style="display: flex; align-items: center; gap: 0.5rem; margin-left: auto;" onclick="event.stopPropagation();">
-                        <select id="templateSelect_${type}" style="padding: 0.4rem 0.6rem; border: 1px solid #ddd; border-radius: 4px; font-size: 0.85rem; min-width: 200px;">
-                            <option value="">請選擇模板</option>
-                            ${templateOptions}
-                        </select>
-                        <button class="btn-add" onclick="event.stopPropagation(); addFieldFromTemplate('${type}');" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">+ 新增模版</button>
-                    </div>
                 </div>
                 <div class="content-type-fields" id="fields_${type}">
                     ${sortedFields.map(field => `
@@ -344,6 +337,13 @@ async function renderFormFields() {
                             </div>
                         </div>
                     `).join('')}
+                    <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem;" onclick="event.stopPropagation();">
+                        <select id="templateSelect_${type}" style="padding: 0.4rem 0.6rem; border: 1px solid #ddd; border-radius: 4px; font-size: 0.85rem; min-width: 200px;">
+                            <option value="">請選擇模板</option>
+                            ${templateOptions}
+                        </select>
+                        <button class="btn-add" onclick="event.stopPropagation(); addFieldFromTemplate('${type}');" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">+ 新增模版</button>
+                    </div>
                 </div>
             </div>
         `;
