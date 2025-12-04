@@ -270,6 +270,10 @@
             document.getElementById('detailDate').textContent = formatDate(content.createdAt);
             document.getElementById('detailViews').textContent = content.views || 0;
             document.getElementById('detailLikes').textContent = content.likes || 0;
+            
+            // 檢查並更新按讚按鈕狀態
+            updateLikeButtonState();
+            
             // 顯示描述（支援富文本格式）
             const detailDescription = document.getElementById('detailDescription');
             if (detailDescription) {
