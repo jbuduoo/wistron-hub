@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>後台管理 - 緯創分享平台</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="css/styles.css?v=4">
+    <style>
+        .admin-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #e5e5e5;
+        }
+        .admin-tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid #e5e5e5;
+        }
+        .admin-tab {
+            padding: 0.75rem 1.5rem;
+            background: none;
+            border: none;
+            border-bottom: 2px solid transparent;
+            cursor: pointer;
+            font-size: 1rem;
+            color: #666;
+            transition: all 0.3s;
+        }
+        .admin-tab.active {
+            color: #858ae8;
+            border-bottom-color: #858ae8;
+        }
+        .admin-tab:hover {
+            color: #858ae8;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .config-section {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .config-section h3 {
+            margin-top: 0;
+            margin-bottom: 1rem;
+            color: #333;
+        }
+        .item-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .item-list-item {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            background: #f9f9f9;
+            border-radius: 6px;
+            margin-bottom: 0.5rem;
+            gap: 1rem;
+        }
+        .item-list-item.dragging {
+            opacity: 0.5;
+        }
+        .drag-handle {
+            cursor: move;
+            color: #999;
+            font-size: 1.2rem;
+        }
+        .item-info {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .item-icon {
+            font-size: 1.5rem;
+        }
+        .item-label {
+            font-weight: 500;
+            color: #333;
+        }
+        .item-filter {
+            color: #666;
+            font-size: 0.9rem;
+            font-family: monospace;
+        }
+        .item-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        .btn-small {
+            padding: 0.4rem 0.8rem;
+            font-size: 0.9rem;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-small:hover {
+            background: #f5f5f5;
+        }
+        .btn-small.btn-danger {
+            color: #dc3545;
+            border-color: #dc3545;
+        }
+        .btn-small.btn-danger:hover {
+            background: #dc3545;
+            color: white;
+        }
+        .btn-add {
+            padding: 0.75rem 1.5rem;
+            background: #858ae8;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin-bottom: 1rem;
+        }
+        .btn-add:hover {
+            background: #6b70d4;
+        }
+        .form-group-admin {
+            margin-bottom: 1rem;
+        }
+        .form-group-admin label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #333;
+        }
+        .form-group-admin input,
+        .form-group-admin select,
+        .form-group-admin textarea {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        .form-group-admin input[type="checkbox"] {
+            width: auto;
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 10000;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal.active {
+            display: flex;
+        }
+        .modal-content {
+            background: white;
+            border-radius: 8px;
+            padding: 2rem;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        .modal-header h3 {
+            margin: 0;
+        }
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #999;
+        }
+        .content-type-group {
+            margin-bottom: 2rem;
+        }
+        .content-type-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            background: #f0f0f0;
+            border-radius: 6px;
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+        }
+        .content-type-header:hover {
+            background: #e5e5e5;
+        }
+        .content-type-fields {
+            padding-left: 1rem;
+        }
+        .field-item {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem;
+            background: #f9f9f9;
+            border-radius: 4px;
+            margin-bottom: 0.5rem;
+            gap: 1rem;
+        }
+        .field-info {
+            flex: 1;
+        }
+        .field-label {
+            font-weight: 500;
+            color: #333;
+        }
+        .field-key {
+            color: #666;
+            font-size: 0.9rem;
+            font-family: monospace;
+        }
+        .required-badge {
+            display: inline-block;
+            padding: 0.2rem 0.5rem;
+            background: #ff4444;
+            color: white;
+            border-radius: 3px;
+            font-size: 0.75rem;
+            margin-left: 0.5rem;
+        }
+        .enabled-toggle {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .toggle-switch {
+            position: relative;
+            width: 44px;
+            height: 24px;
+            background: #ccc;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .toggle-switch.active {
+            background: #858ae8;
+        }
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: left 0.3s;
+        }
+        .toggle-switch.active::after {
+            left: 22px;
+        }
+        .alert {
+            padding: 1rem;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+        }
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+    <!-- 頂部導航欄 -->
+    <header class="header">
+        <div class="header-left">
+            <div class="logo">
+                <a href="index.html" style="text-decoration: none; color: inherit; display: flex; flex-direction: column;">
+                    <h1>Wistron Share</h1>
+                    <span class="logo-subtitle">緯創分享平台</span>
+                </a>
+            </div>
+        </div>
+        <div class="header-right">
+            <button class="btn-secondary" onclick="window.location.href='index.html'">返回首頁</button>
+        </div>
+    </header>
+
+    <div class="admin-container">
+        <div class="admin-header">
+            <h2>後台管理系統</h2>
+            <div id="adminUserInfo"></div>
+        </div>
+
+        <div id="alertContainer"></div>
+
+        <div class="admin-tabs">
+            <button class="admin-tab active" onclick="switchTab('sidebar')">側邊欄管理</button>
+            <button class="admin-tab" onclick="switchTab('fields')">表單欄位管理</button>
+        </div>
+
+        <!-- 側邊欄管理 -->
+        <div id="sidebarTab" class="tab-content active">
+            <div class="config-section">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <h3>導航項目列表</h3>
+                    <button class="btn-add" onclick="showAddSidebarModal()">+ 新增項目</button>
+                </div>
+                <ul class="item-list" id="sidebarList">
+                    <!-- 動態生成 -->
+                </ul>
+            </div>
+        </div>
+
+        <!-- 表單欄位管理 -->
+        <div id="fieldsTab" class="tab-content">
+            <div class="config-section">
+                <h3>表單欄位配置</h3>
+                <div id="fieldsByContentType">
+                    <!-- 動態生成 -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 新增/編輯側邊欄項目 Modal -->
+    <div id="sidebarModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="sidebarModalTitle">新增側邊欄項目</h3>
+                <button class="close-modal" onclick="closeSidebarModal()">&times;</button>
+            </div>
+            <form id="sidebarForm">
+                <input type="hidden" id="sidebarItemId">
+                <div class="form-group-admin">
+                    <label for="sidebarFilter">Filter 值 (data-filter) <span class="required">*</span></label>
+                    <input type="text" id="sidebarFilter" required placeholder="例如: news, video, article">
+                </div>
+                <div class="form-group-admin">
+                    <label for="sidebarIcon">圖標 (Emoji) <span class="required">*</span></label>
+                    <input type="text" id="sidebarIcon" required placeholder="例如: 📢, 🎬, 📄" maxlength="2">
+                </div>
+                <div class="form-group-admin">
+                    <label for="sidebarLabel">顯示文字 <span class="required">*</span></label>
+                    <input type="text" id="sidebarLabel" required placeholder="例如: 最新消息">
+                </div>
+                <div class="form-group-admin">
+                    <label for="sidebarOrder">排序順序</label>
+                    <input type="number" id="sidebarOrder" min="0" value="0">
+                </div>
+                <div class="form-group-admin">
+                    <label>
+                        <input type="checkbox" id="sidebarEnabled" checked>
+                        啟用此項目
+                    </label>
+                </div>
+                <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                    <button type="submit" class="btn-primary" style="flex: 1;">儲存</button>
+                    <button type="button" class="btn-secondary" onclick="closeSidebarModal()" style="flex: 1;">取消</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 新增/編輯表單欄位 Modal -->
+    <div id="fieldModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="fieldModalTitle">新增表單欄位</h3>
+                <button class="close-modal" onclick="closeFieldModal()">&times;</button>
+            </div>
+            <form id="fieldForm">
+                <input type="hidden" id="fieldId">
+                <div class="form-group-admin">
+                    <label for="fieldContentType">內容類型 <span class="required">*</span></label>
+                    <select id="fieldContentType" required>
+                        <option value="">請選擇</option>
+                        <option value="news">最新消息</option>
+                        <option value="video">影片分享</option>
+                        <option value="article">文章分享</option>
+                        <option value="suggestion">懸賞區</option>
+                        <option value="project">作品分享</option>
+                        <option value="job">專案支援及技能媒合</option>
+                        <option value="expert">找內部專家</option>
+                        <option value="all">所有類型</option>
+                    </select>
+                </div>
+                <div class="form-group-admin">
+                    <label for="fieldKey">欄位鍵值 (fieldKey) <span class="required">*</span></label>
+                    <input type="text" id="fieldKey" required placeholder="例如: title, author, videoLink" pattern="[a-zA-Z0-9_]+">
+                    <small style="color: #666;">只能使用英文字母、數字和底線</small>
+                </div>
+                <div class="form-group-admin">
+                    <label for="fieldType">欄位類型 <span class="required">*</span></label>
+                    <select id="fieldType" required>
+                        <option value="text">文字輸入 (text)</option>
+                        <option value="url">網址輸入 (url)</option>
+                        <option value="textarea">多行文字 (textarea)</option>
+                        <option value="select">下拉選單 (select)</option>
+                        <option value="date">日期 (date)</option>
+                        <option value="datetime-local">日期時間 (datetime-local)</option>
+                        <option value="file">檔案上傳 (file)</option>
+                        <option value="editor">富文本編輯器 (editor)</option>
+                    </select>
+                </div>
+                <div class="form-group-admin">
+                    <label for="fieldLabel">顯示標籤 <span class="required">*</span></label>
+                    <input type="text" id="fieldLabel" required placeholder="例如: 標題, 作者名稱">
+                </div>
+                <div class="form-group-admin">
+                    <label for="fieldPlaceholder">提示文字</label>
+                    <input type="text" id="fieldPlaceholder" placeholder="例如: 輸入標題...">
+                </div>
+                <div class="form-group-admin" id="fieldOptionsGroup" style="display: none;">
+                    <label for="fieldOptions">選項 (每行一個，格式: 值|顯示文字)</label>
+                    <textarea id="fieldOptions" rows="5" placeholder="例如:&#10;option1|選項一&#10;option2|選項二"></textarea>
+                </div>
+                <div class="form-group-admin">
+                    <label>
+                        <input type="checkbox" id="fieldRequired">
+                        必填欄位
+                    </label>
+                </div>
+                <div class="form-group-admin">
+                    <label>
+                        <input type="checkbox" id="fieldEnabled" checked>
+                        啟用此欄位
+                    </label>
+                </div>
+                <div class="form-group-admin">
+                    <label for="fieldOrder">排序順序</label>
+                    <input type="number" id="fieldOrder" min="0" value="0">
+                </div>
+                <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                    <button type="submit" class="btn-primary" style="flex: 1;">儲存</button>
+                    <button type="button" class="btn-secondary" onclick="closeFieldModal()" style="flex: 1;">取消</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-config.js?v=2"></script>
+    <script src="js/supabase-api.js?v=2"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/admin-api.js"></script>
+    <script src="js/admin-ui.js"></script>
+</body>
+</html>
+

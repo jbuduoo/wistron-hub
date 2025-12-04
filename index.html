@@ -55,6 +55,7 @@
             </div>
             <div class="user-menu-divider"></div>
             <a href="#" class="user-menu-item" onclick="window.location.href='upload.html'">📤 上傳內容</a>
+            <a href="#" class="user-menu-item" id="adminMenuLink" style="display: none;" onclick="window.location.href='admin.html'">⚙️ 後台管理</a>
             <a href="#" class="user-menu-item" onclick="logout()">🚪 登出</a>
         </div>
     </header>
@@ -62,31 +63,8 @@
     <div class="container">
         <!-- 側邊欄 -->
         <aside class="sidebar">
-            <nav class="sidebar-nav">
-                <a href="#" class="nav-item active" data-filter="news">
-                    <span class="nav-icon">📢</span> 最新消息
-                </a>
-                <a href="#" class="nav-item" data-filter="all">
-                    <span class="nav-icon">🏆</span> 2025黑客松競賽
-                </a>
-                <a href="#" class="nav-item" data-filter="video">
-                    <span class="nav-icon">🎬</span> 影片分享
-                </a>
-                <a href="#" class="nav-item" data-filter="article">
-                    <span class="nav-icon">📄</span> 文章分享
-                </a>
-                <a href="#" class="nav-item" data-filter="suggestion">
-                    <span class="nav-icon">💰</span> 懸賞區
-                </a>
-                <a href="#" class="nav-item" data-filter="project">
-                    <span class="nav-icon">💻</span> 作品分享
-                </a>
-                <a href="#" class="nav-item" data-filter="job">
-                    <span class="nav-icon">🤝</span> 專案支援技能媒合
-                </a>
-                <a href="#" class="nav-item" data-filter="expert">
-                    <span class="nav-icon">🤝</span> 找內部專家
-                </a>
+            <nav class="sidebar-nav" id="sidebarNav">
+                <!-- 側邊欄項目將由 JavaScript 動態生成 -->
             </nav>
         </aside>
 
@@ -158,6 +136,12 @@
                     const menuUserUsername = document.getElementById('menuUserUsername');
                     if (menuUserName) menuUserName.textContent = user.name || user.username;
                     if (menuUserUsername) menuUserUsername.textContent = '@' + user.username;
+                    
+                    // 顯示管理員選單連結
+                    const adminMenuLink = document.getElementById('adminMenuLink');
+                    if (adminMenuLink && Auth.isAdmin()) {
+                        adminMenuLink.style.display = 'block';
+                    }
                 }
                 
                 // 載入用戶積分
@@ -190,9 +174,114 @@
             }
         });
         
-        // 頁面載入時更新 header
+        // 載入側邊欄配置
+        async function loadSidebarNavigation() {
+            const sidebarNav = document.getElementById('sidebarNav');
+            if (!sidebarNav) return;
+            
+            // 如果 admin-api.js 已載入，使用動態配置
+            if (typeof getSidebarConfig !== 'undefined') {
+                try {
+                    const config = await getSidebarConfig();
+                    const enabledItems = config.filter(item => item.enabled).sort((a, b) => a.order - b.order);
+                    
+                    sidebarNav.innerHTML = enabledItems.map((item, index) => `
+                        <a href="#" class="nav-item ${index === 0 ? 'active' : ''}" data-filter="${item.filter}">
+                            <span class="nav-icon">${item.icon}</span> ${item.label}
+                        </a>
+                    `).join('');
+                    
+                    // 重新綁定點擊事件
+                    bindSidebarClickEvents();
+                } catch (error) {
+                    console.warn('載入側邊欄配置失敗，使用預設配置:', error);
+                    loadDefaultSidebar();
+                }
+            } else {
+                // 如果 admin-api.js 未載入，使用預設配置
+                loadDefaultSidebar();
+            }
+        }
+        
+        function loadDefaultSidebar() {
+            const sidebarNav = document.getElementById('sidebarNav');
+            if (!sidebarNav) return;
+            
+            sidebarNav.innerHTML = `
+                <a href="#" class="nav-item active" data-filter="news">
+                    <span class="nav-icon">📢</span> 最新消息
+                </a>
+                <a href="#" class="nav-item" data-filter="all">
+                    <span class="nav-icon">🏆</span> 2025黑客松競賽
+                </a>
+                <a href="#" class="nav-item" data-filter="video">
+                    <span class="nav-icon">🎬</span> 影片分享
+                </a>
+                <a href="#" class="nav-item" data-filter="article">
+                    <span class="nav-icon">📄</span> 文章分享
+                </a>
+                <a href="#" class="nav-item" data-filter="suggestion">
+                    <span class="nav-icon">💰</span> 懸賞區
+                </a>
+                <a href="#" class="nav-item" data-filter="project">
+                    <span class="nav-icon">💻</span> 作品分享
+                </a>
+                <a href="#" class="nav-item" data-filter="job">
+                    <span class="nav-icon">🤝</span> 專案支援技能媒合
+                </a>
+                <a href="#" class="nav-item" data-filter="expert">
+                    <span class="nav-icon">🤝</span> 找內部專家
+                </a>
+            `;
+            bindSidebarClickEvents();
+        }
+        
+        function bindSidebarClickEvents() {
+            // 如果 script.js 中的 setupSidebarFilter 存在，使用它
+            if (typeof setupSidebarFilter !== 'undefined') {
+                setupSidebarFilter();
+            } else {
+                // 否則手動綁定事件
+                const navItems = document.querySelectorAll('.nav-item');
+                const contentTitle = document.getElementById('contentTitle');
+                const titles = {
+                    all: '2025黑客松競賽',
+                    news: '最新消息',
+                    video: '影片分享',
+                    article: '文章分享',
+                    suggestion: '懸賞區',
+                    project: '作品分享',
+                    job: '專案支援及技能媒合',
+                    expert: '找內部專家'
+                };
+                
+                navItems.forEach(item => {
+                    item.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        // 移除所有 active 類
+                        navItems.forEach(nav => nav.classList.remove('active'));
+                        // 添加 active 類到當前項目
+                        this.classList.add('active');
+                        // 更新標題
+                        const filter = this.getAttribute('data-filter');
+                        if (contentTitle) {
+                            contentTitle.textContent = titles[filter] || '全部內容';
+                        }
+                        // 觸發篩選
+                        const sortSelect = document.getElementById('sortSelect');
+                        const sort = sortSelect ? sortSelect.value : 'newest';
+                        if (typeof loadContent !== 'undefined') {
+                            loadContent(filter, sort);
+                        }
+                    });
+                });
+            }
+        }
+        
+        // 頁面載入時更新 header 和側邊欄
         document.addEventListener('DOMContentLoaded', function() {
             updateHeaderForAuth();
+            loadSidebarNavigation();
         });
     </script>
 </body>
