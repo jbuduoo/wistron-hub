@@ -79,7 +79,51 @@
                     <!-- 描述 -->
                     <div class="form-group">
                         <label for="description">描述/內容： <span class="required">*</span></label>
-                        <textarea id="description" name="description" rows="12" required placeholder="輸入內容描述或文章內容..."></textarea>
+                        <!-- 文字編輯工具欄 -->
+                        <div class="text-editor-toolbar">
+                            <button type="button" class="toolbar-btn" onclick="formatText('bold')" title="粗體">
+                                <strong>B</strong>
+                            </button>
+                            <button type="button" class="toolbar-btn" onclick="formatText('italic')" title="斜體">
+                                <em>I</em>
+                            </button>
+                            <button type="button" class="toolbar-btn" onclick="formatText('underline')" title="底線">
+                                <u>U</u>
+                            </button>
+                            <div class="toolbar-separator"></div>
+                            <select class="toolbar-select" id="fontSize" onchange="formatText('fontSize', this.value)" title="字體大小">
+                                <option value="">字體大小</option>
+                                <option value="12px">12px</option>
+                                <option value="14px">14px</option>
+                                <option value="16px" selected>16px</option>
+                                <option value="18px">18px</option>
+                                <option value="20px">20px</option>
+                                <option value="24px">24px</option>
+                            </select>
+                            <input type="color" class="toolbar-color" id="fontColor" value="#000000" onchange="formatText('foreColor', this.value)" title="文字顏色">
+                            <input type="color" class="toolbar-color" id="bgColor" value="#ffffff" onchange="formatText('backColor', this.value)" title="背景顏色">
+                            <div class="toolbar-separator"></div>
+                            <button type="button" class="toolbar-btn" onclick="formatText('insertUnorderedList')" title="項目符號">
+                                •
+                            </button>
+                            <button type="button" class="toolbar-btn" onclick="formatText('insertOrderedList')" title="編號清單">
+                                1.
+                            </button>
+                            <div class="toolbar-separator"></div>
+                            <button type="button" class="toolbar-btn" onclick="formatText('justifyLeft')" title="靠左對齊">
+                                ⬅
+                            </button>
+                            <button type="button" class="toolbar-btn" onclick="formatText('justifyCenter')" title="置中">
+                                ⬌
+                            </button>
+                            <button type="button" class="toolbar-btn" onclick="formatText('justifyRight')" title="靠右對齊">
+                                ➡
+                            </button>
+                        </div>
+                        <div class="text-editor-wrapper">
+                            <div id="descriptionEditor" contenteditable="true" class="text-editor" required placeholder="輸入內容描述或文章內容..."></div>
+                            <textarea id="description" name="description" rows="15" style="display: none;" required></textarea>
+                        </div>
                     </div>
 
                     <!-- GitHub 連結（作品分享專用） -->
@@ -252,6 +296,43 @@
             contentTypeSelect.addEventListener('change', toggleFormFields);
         }
 
+        // 文字編輯工具功能
+        function formatText(command, value = null) {
+            const editor = document.getElementById('descriptionEditor');
+            if (!editor) return;
+            
+            editor.focus();
+            
+            if (value) {
+                document.execCommand(command, false, value);
+            } else {
+                document.execCommand(command, false, null);
+            }
+            
+            // 同步內容到隱藏的 textarea
+            syncEditorContent();
+        }
+        
+        function syncEditorContent() {
+            const editor = document.getElementById('descriptionEditor');
+            const textarea = document.getElementById('description');
+            if (editor && textarea) {
+                textarea.value = editor.innerHTML;
+            }
+        }
+        
+        // 監聽編輯器內容變化
+        const descriptionEditor = document.getElementById('descriptionEditor');
+        if (descriptionEditor) {
+            descriptionEditor.addEventListener('input', syncEditorContent);
+            descriptionEditor.addEventListener('paste', function(e) {
+                e.preventDefault();
+                const text = (e.clipboardData || window.clipboardData).getData('text');
+                document.execCommand('insertText', false, text);
+                syncEditorContent();
+            });
+        }
+
         // 檔案預覽功能
         document.getElementById('file').addEventListener('change', function(e) {
             const file = e.target.files[0];
@@ -276,11 +357,20 @@
         document.getElementById('uploadForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
+            // 同步編輯器內容到 textarea
+            syncEditorContent();
+            
             const formData = new FormData(this);
             const contentType = formData.get('contentType');
             const title = formData.get('title');
             const author = formData.get('author');
             const description = formData.get('description');
+            
+            // 驗證描述內容
+            if (!description || description.trim() === '' || description === '<br>' || description === '<div><br></div>') {
+                alert('請輸入描述/內容！');
+                return;
+            }
             const file = formData.get('file');
             const githubLink = formData.get('githubLink');
             const isHackathon = document.getElementById('isHackathon').checked;

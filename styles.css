@@ -1032,6 +1032,99 @@ body {
     max-width: none;
 }
 
+/* 文字編輯工具欄 */
+.text-editor-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    background: #f8f9fa;
+    border: 2px solid #e0e0e0;
+    border-bottom: none;
+    border-radius: 8px 8px 0 0;
+    flex-wrap: wrap;
+}
+
+.toolbar-btn {
+    background: white;
+    border: 1px solid #d0d0d0;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+    min-width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.toolbar-btn:hover {
+    background: #e9ecef;
+    border-color: #3b82f6;
+}
+
+.toolbar-btn:active {
+    background: #dee2e6;
+}
+
+.toolbar-select {
+    background: white;
+    border: 1px solid #d0d0d0;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.85rem;
+    cursor: pointer;
+    height: 32px;
+    min-width: 100px;
+}
+
+.toolbar-color {
+    width: 32px;
+    height: 32px;
+    border: 1px solid #d0d0d0;
+    border-radius: 4px;
+    cursor: pointer;
+    padding: 2px;
+}
+
+.toolbar-separator {
+    width: 1px;
+    height: 24px;
+    background: #d0d0d0;
+    margin: 0 0.25rem;
+}
+
+.text-editor-wrapper {
+    position: relative;
+}
+
+.text-editor {
+    min-height: 300px;
+    padding: 0.75rem;
+    border: 2px solid #e0e0e0;
+    border-radius: 0 0 8px 8px;
+    font-size: 1rem;
+    font-family: inherit;
+    transition: border-color 0.3s;
+    background: white;
+    overflow-y: auto;
+    line-height: 1.6;
+}
+
+.text-editor:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.text-editor:empty:before {
+    content: attr(placeholder);
+    color: #999;
+    pointer-events: none;
+}
+
 .type-selector {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
