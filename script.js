@@ -184,6 +184,12 @@ const sampleData = [
 
 // 初始化資料（使用 Supabase API）
 async function initializeData() {
+    // 檢查函數是否存在
+    if (typeof loadDataFromSupabase === 'undefined') {
+        console.error('錯誤：loadDataFromSupabase 函數未定義！請確認 supabase-api.js 已正確載入。');
+        throw new Error('Supabase API 函數未載入');
+    }
+    
     try {
         // 從 Supabase 讀取現有資料
         const existingData = await loadDataFromSupabase();
@@ -222,8 +228,25 @@ async function initializeData() {
 
 // 載入內容到主頁
 async function loadContent(filter = 'all', sort = 'newest') {
-    // 從 Supabase 讀取資料
-    const contents = await loadDataFromSupabase();
+    let contents = [];
+    
+    // 檢查函數是否存在
+    if (typeof loadDataFromSupabase === 'undefined') {
+        console.error('錯誤：loadDataFromSupabase 函數未定義！請確認 supabase-api.js 已正確載入。');
+        // 使用 localStorage 作為備援
+        const localData = localStorage.getItem('contents');
+        contents = localData ? JSON.parse(localData) : [];
+    } else {
+        // 從 Supabase 讀取資料
+        try {
+            contents = await loadDataFromSupabase();
+        } catch (error) {
+            console.error('讀取 Supabase 資料失敗，使用 localStorage 備援:', error);
+            const localData = localStorage.getItem('contents');
+            contents = localData ? JSON.parse(localData) : [];
+        }
+    }
+    
     let filtered = contents;
 
     // 篩選
