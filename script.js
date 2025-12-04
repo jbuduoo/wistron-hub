@@ -344,7 +344,7 @@ async function loadContent(filter = 'all', sort = 'newest') {
                             <span class="meta-value">${content.author}</span>
                         </div>
                     </div>
-                    <p class="news-description">${content.description.substring(0, 150)}${content.description.length > 150 ? '...' : ''}</p>
+                    <p class="news-description">${stripHtmlAndTruncate(content.description, 150)}</p>
                     <div class="news-footer">
                         <div class="news-stats">
                             <span>👁️ ${content.views || 0}</span>
@@ -393,6 +393,17 @@ async function loadContent(filter = 'all', sort = 'newest') {
         `;
         }).join('');
     }
+}
+
+// 移除 HTML 標籤並截取純文字（用於列表顯示）
+function stripHtmlAndTruncate(html, maxLength = 150) {
+    if (!html) return '';
+    // 創建臨時元素來移除 HTML 標籤
+    const temp = document.createElement('div');
+    temp.innerHTML = html;
+    const text = temp.textContent || temp.innerText || '';
+    if (text.length <= maxLength) return text;
+    return text.substring(0, maxLength) + '...';
 }
 
 // 格式化最新消息日期

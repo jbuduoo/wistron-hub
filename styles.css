@@ -1565,7 +1565,30 @@ body {
 .description p {
     color: #666;
     line-height: 1.8;
-    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+/* 富文本內容樣式 */
+.description p strong {
+    font-weight: 700;
+}
+
+.description p em {
+    font-style: italic;
+}
+
+.description p u {
+    text-decoration: underline;
+}
+
+.description p ul,
+.description p ol {
+    margin: 0.5rem 0;
+    padding-left: 2rem;
+}
+
+.description p li {
+    margin: 0.25rem 0;
 }
 
 .action-buttons {
