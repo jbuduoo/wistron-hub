@@ -432,13 +432,13 @@ async function renderFormFields() {
                                 </div>
                                 <div class="field-key">${field.fieldKey} (${field.fieldType})</div>
                             </div>
-                            <div class="enabled-toggle">
+                            <div class="enabled-toggle" onclick="event.stopPropagation();">
                                 <span>${field.enabled ? '啟用' : '停用'}</span>
-                                <div class="toggle-switch ${field.enabled ? 'active' : ''}" onclick="toggleFieldEnabled('${field.id}')"></div>
+                                <div class="toggle-switch ${field.enabled ? 'active' : ''}" onclick="event.stopPropagation(); toggleFieldEnabled('${field.id}')"></div>
                             </div>
-                            <div class="item-actions">
-                                <button class="btn-small" onclick="editField('${field.id}')">編輯</button>
-                                <button class="btn-small btn-danger" onclick="deleteField('${field.id}')">刪除</button>
+                            <div class="item-actions" onclick="event.stopPropagation();">
+                                <button class="btn-small" onclick="event.stopPropagation(); editField('${field.id}')">編輯</button>
+                                <button class="btn-small btn-danger" onclick="event.stopPropagation(); deleteField('${field.id}')">刪除</button>
                             </div>
                         </div>
                     `).join('')}
@@ -459,6 +459,8 @@ async function renderFormFields() {
 }
 
 // 欄位拖拽排序
+let draggedFieldElement = null; // 全局變數，用於追蹤正在拖拽的欄位
+
 function initFieldDragAndDrop() {
     const contentTypes = ['all', 'news', 'video', 'article', 'suggestion', 'project', 'job', 'expert'];
     
@@ -467,13 +469,12 @@ function initFieldDragAndDrop() {
         if (!fieldsContainer) return;
         
         const fieldItems = fieldsContainer.querySelectorAll('.field-item');
-        let draggedElement = null;
         
         fieldItems.forEach(item => {
             item.draggable = true;
             
             item.addEventListener('dragstart', function(e) {
-                draggedElement = this;
+                draggedFieldElement = this;
                 this.classList.add('dragging');
                 e.dataTransfer.effectAllowed = 'move';
             });
@@ -481,29 +482,41 @@ function initFieldDragAndDrop() {
             item.addEventListener('dragend', function() {
                 this.classList.remove('dragging');
                 // 更新順序
-                updateFieldOrder(type);
+                if (draggedFieldElement) {
+                    const contentType = draggedFieldElement.getAttribute('data-content-type');
+                    updateFieldOrder(contentType);
+                }
+                draggedFieldElement = null;
             });
             
             item.addEventListener('dragover', function(e) {
                 e.preventDefault();
                 e.dataTransfer.dropEffect = 'move';
                 
+                if (!draggedFieldElement) return;
+                
                 // 只允許在同一內容類型內拖拽
                 const contentType = this.getAttribute('data-content-type');
-                if (draggedElement && draggedElement.getAttribute('data-content-type') === contentType) {
+                const draggedContentType = draggedFieldElement.getAttribute('data-content-type');
+                
+                if (contentType === draggedContentType && this !== draggedFieldElement) {
                     const afterElement = getDragAfterFieldElement(fieldsContainer, e.clientY, contentType);
                     if (afterElement == null) {
                         // 插入到最後（在新增模板區域之前）
                         const addTemplateDiv = fieldsContainer.querySelector('div[style*="display: flex"]');
                         if (addTemplateDiv) {
-                            fieldsContainer.insertBefore(draggedElement, addTemplateDiv);
+                            fieldsContainer.insertBefore(draggedFieldElement, addTemplateDiv);
                         } else {
-                            fieldsContainer.appendChild(draggedElement);
+                            fieldsContainer.appendChild(draggedFieldElement);
                         }
                     } else {
-                        fieldsContainer.insertBefore(draggedElement, afterElement);
+                        fieldsContainer.insertBefore(draggedFieldElement, afterElement);
                     }
                 }
+            });
+            
+            item.addEventListener('drop', function(e) {
+                e.preventDefault();
             });
         });
     });
@@ -511,6 +524,8 @@ function initFieldDragAndDrop() {
 
 function getDragAfterFieldElement(container, y, contentType) {
     const draggableElements = [...container.querySelectorAll(`.field-item[data-content-type="${contentType}"]:not(.dragging)`)];
+    
+    if (draggableElements.length === 0) return null;
     
     return draggableElements.reduce((closest, child) => {
         const box = child.getBoundingClientRect();
