@@ -55,6 +55,12 @@
                         <input type="text" id="title" name="title" required placeholder="輸入標題...">
                     </div>
 
+                    <!-- 影片連結（影片分享專用） -->
+                    <div class="form-group form-group-inline" id="videoLinkGroup" style="display: none;">
+                        <label for="videoLink">影片連結： <span class="required">*</span></label>
+                        <input type="url" id="videoLink" name="videoLink" placeholder="https://www.youtube.com/watch?v=... 或 https://vimeo.com/...">
+                    </div>
+
                     <!-- 作者 -->
                     <div class="form-group form-group-inline">
                         <label for="author">作者名稱： <span class="required">*</span></label>
@@ -124,13 +130,6 @@
                             <div id="descriptionEditor" contenteditable="true" class="text-editor" required placeholder="輸入內容描述或文章內容..."></div>
                             <textarea id="description" name="description" rows="15" style="display: none;" required></textarea>
                         </div>
-                    </div>
-
-                    <!-- 影片連結（影片分享專用） -->
-                    <div class="form-group" id="videoLinkGroup" style="display: none;">
-                        <label for="videoLink">影片連結 <span class="required">*</span></label>
-                        <input type="url" id="videoLink" name="videoLink" placeholder="https://www.youtube.com/watch?v=... 或 https://vimeo.com/...">
-                        <small class="form-hint">請輸入 YouTube 或 Vimeo 影片連結</small>
                     </div>
 
                     <!-- GitHub 連結（作品分享專用） -->
