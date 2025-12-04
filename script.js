@@ -182,28 +182,37 @@ const sampleData = [
     }
 ];
 
-// 初始化資料（使用 GitHub API）
+// 初始化資料（使用 Supabase API）
 async function initializeData() {
     try {
-        // 從 GitHub 讀取現有資料
-        const existingData = await loadDataFromGitHub();
+        // 從 Supabase 讀取現有資料
+        const existingData = await loadDataFromSupabase();
         
         // 如果沒有資料或資料很少，合併範例資料
         if (existingData.length === 0) {
-            // 如果沒有資料，直接儲存範例資料到 GitHub
-            await saveDataToGitHub(sampleData, 'Initialize with sample data');
+            // 如果沒有資料，逐筆新增範例資料到 Supabase
+            for (const item of sampleData) {
+                try {
+                    await addContentToSupabase(item);
+                } catch (error) {
+                    console.error('新增範例資料失敗:', error);
+                }
+            }
         } else if (existingData.length < sampleData.length) {
             // 如果現有資料少於範例資料，合併並更新
             const existingIds = new Set(existingData.map(item => item.id));
             const newItems = sampleData.filter(item => !existingIds.has(item.id));
-            if (newItems.length > 0) {
-                const mergedData = [...existingData, ...newItems];
-                await saveDataToGitHub(mergedData, 'Merge with sample data');
+            for (const item of newItems) {
+                try {
+                    await addContentToSupabase(item);
+                } catch (error) {
+                    console.error('新增範例資料失敗:', error);
+                }
             }
         }
     } catch (error) {
         console.error('初始化資料失敗:', error);
-        // 如果 GitHub API 失敗，使用 localStorage 作為備援
+        // 如果 Supabase API 失敗，使用 localStorage 作為備援
         const localData = localStorage.getItem('contents');
         if (!localData) {
             localStorage.setItem('contents', JSON.stringify(sampleData));
@@ -213,8 +222,8 @@ async function initializeData() {
 
 // 載入內容到主頁
 async function loadContent(filter = 'all', sort = 'newest') {
-    // 從 GitHub 讀取資料
-    const contents = await loadDataFromGitHub();
+    // 從 Supabase 讀取資料
+    const contents = await loadDataFromSupabase();
     let filtered = contents;
 
     // 篩選
@@ -409,7 +418,7 @@ function setupSearch() {
 
     async function performSearch() {
         const query = searchInput.value.toLowerCase().trim();
-        const contents = await loadDataFromGitHub();
+        const contents = await loadDataFromSupabase();
         
         if (!query) {
             const activeFilter = document.querySelector('.nav-item.active');

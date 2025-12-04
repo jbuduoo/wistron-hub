@@ -216,8 +216,9 @@
         </main>
     </div>
 
-    <script src="config.js"></script>
-    <script src="github-api.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
+    <script src="supabase-api.js"></script>
     <script src="script.js"></script>
     <script>
         // 檔案預覽功能
@@ -314,7 +315,7 @@
             submitBtn.textContent = '提交中...';
 
             try {
-                const result = await addContentToGitHub(content);
+                const result = await addContentToSupabase(content);
                 
                 if (result.success) {
                     alert('內容提交成功！管理員將審核您的內容，符合規範即可獲得認證徽章。');
@@ -326,7 +327,7 @@
                 }
             } catch (error) {
                 console.error('提交失敗:', error);
-                alert(`提交失敗：${error.message}\n\n請檢查網路連線或 GitHub 設定。`);
+                alert(`提交失敗：${error.message}\n\n請檢查網路連線或 Supabase 設定。`);
                 submitBtn.disabled = false;
                 submitBtn.textContent = originalText;
             }

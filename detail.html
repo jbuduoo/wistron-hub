@@ -127,8 +127,9 @@
         </main>
     </div>
 
-    <script src="config.js"></script>
-    <script src="github-api.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
+    <script src="supabase-api.js"></script>
     <script src="script.js"></script>
     <script>
         // 從 URL 參數獲取內容 ID
@@ -137,7 +138,7 @@
 
         // 載入內容詳情
         async function loadContentDetail() {
-            const contents = await loadDataFromGitHub();
+            const contents = await loadDataFromSupabase();
             const content = contents.find(c => c.id === contentId);
 
             if (!content) {
@@ -147,8 +148,8 @@
 
             // 更新觀看數
             content.views = (content.views || 0) + 1;
-            // 更新到 GitHub（非同步，不等待完成）
-            updateContentInGitHub(contentId, { views: content.views }).catch(err => {
+            // 更新到 Supabase（非同步，不等待完成）
+            updateContentInSupabase(contentId, { views: content.views }).catch(err => {
                 console.error('更新觀看數失敗:', err);
             });
 
@@ -290,7 +291,7 @@
         }
 
         async function loadRelatedContent(currentContent) {
-            const contents = await loadDataFromGitHub();
+            const contents = await loadDataFromSupabase();
             const related = contents
                 .filter(c => c.id !== currentContent.id && c.type === currentContent.type)
                 .slice(0, 5);
@@ -334,7 +335,7 @@
         }
 
         async function toggleLike() {
-            const contents = await loadDataFromGitHub();
+            const contents = await loadDataFromSupabase();
             const content = contents.find(c => c.id === contentId);
             
             if (content) {
@@ -345,9 +346,9 @@
                 likeBtn.style.opacity = '0.6';
                 likeBtn.disabled = true;
                 
-                // 更新到 GitHub
+                // 更新到 Supabase
                 try {
-                    await updateContentInGitHub(contentId, { likes: content.likes });
+                    await updateContentInSupabase(contentId, { likes: content.likes });
                 } catch (error) {
                     console.error('更新按讚數失敗:', error);
                 }
@@ -423,60 +424,114 @@
         }
 
         // 載入留言
-        function loadComments() {
-            const comments = JSON.parse(localStorage.getItem(`comments_${contentId}`) || '[]');
-            const sortType = document.getElementById('sortComments').value;
-            
-            let sortedComments = [...comments];
-            if (sortType === 'newest') {
-                sortedComments.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-            } else if (sortType === 'oldest') {
-                sortedComments.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
-            } else if (sortType === 'popular') {
-                sortedComments.sort((a, b) => (b.likes || 0) - (a.likes || 0));
-            }
+        async function loadComments() {
+            try {
+                const comments = await loadCommentsFromSupabase(contentId);
+                const sortType = document.getElementById('sortComments').value;
+                
+                let sortedComments = [...comments];
+                if (sortType === 'newest') {
+                    sortedComments.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+                } else if (sortType === 'oldest') {
+                    sortedComments.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+                } else if (sortType === 'popular') {
+                    sortedComments.sort((a, b) => (b.likes || 0) - (a.likes || 0));
+                }
 
-            const commentsList = document.getElementById('commentsList');
-            const noComments = document.getElementById('noComments');
-            const commentsCount = document.getElementById('commentsCount');
+                const commentsList = document.getElementById('commentsList');
+                const noComments = document.getElementById('noComments');
+                const commentsCount = document.getElementById('commentsCount');
 
-            commentsCount.textContent = `${comments.length} 則留言`;
+                commentsCount.textContent = `${comments.length} 則留言`;
 
-            if (sortedComments.length === 0) {
-                commentsList.style.display = 'none';
-                noComments.style.display = 'block';
-                return;
-            }
+                if (sortedComments.length === 0) {
+                    commentsList.style.display = 'none';
+                    noComments.style.display = 'block';
+                    return;
+                }
 
-            commentsList.style.display = 'block';
-            noComments.style.display = 'none';
+                commentsList.style.display = 'block';
+                noComments.style.display = 'none';
 
-            commentsList.innerHTML = sortedComments.map(comment => `
-                <div class="comment-item">
-                    <div class="comment-avatar-small">
-                        <span>${getUserInitial(comment.author)}</span>
-                    </div>
-                    <div class="comment-content">
-                        <div class="comment-header">
-                            <span class="comment-author">${comment.author}</span>
-                            <span class="comment-date">${formatCommentDate(comment.createdAt)}</span>
+                commentsList.innerHTML = sortedComments.map(comment => `
+                    <div class="comment-item">
+                        <div class="comment-avatar-small">
+                            <span>${getUserInitial(comment.author)}</span>
                         </div>
-                        <div class="comment-text">${escapeHtml(comment.text)}</div>
-                        <div class="comment-actions">
-                            <button class="comment-action-btn" onclick="likeComment('${comment.id}')">
-                                <span>👍</span> ${comment.likes || 0}
-                            </button>
-                            <button class="comment-action-btn" onclick="replyComment('${comment.id}', '${comment.author}')">
-                                回覆
-                            </button>
+                        <div class="comment-content">
+                            <div class="comment-header">
+                                <span class="comment-author">${comment.author}</span>
+                                <span class="comment-date">${formatCommentDate(comment.createdAt)}</span>
+                            </div>
+                            <div class="comment-text">${escapeHtml(comment.content)}</div>
+                            <div class="comment-actions">
+                                <button class="comment-action-btn" onclick="likeComment('${comment.id}')">
+                                    <span>👍</span> ${comment.likes || 0}
+                                </button>
+                                <button class="comment-action-btn" onclick="replyComment('${comment.id}', '${comment.author}')">
+                                    回覆
+                                </button>
+                            </div>
                         </div>
                     </div>
-                </div>
-            `).join('');
+                `).join('');
+            } catch (error) {
+                console.error('載入留言失敗:', error);
+                // 備援：使用 localStorage
+                const comments = JSON.parse(localStorage.getItem(`comments_${contentId}`) || '[]');
+                const sortType = document.getElementById('sortComments').value;
+                
+                let sortedComments = [...comments];
+                if (sortType === 'newest') {
+                    sortedComments.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+                } else if (sortType === 'oldest') {
+                    sortedComments.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+                } else if (sortType === 'popular') {
+                    sortedComments.sort((a, b) => (b.likes || 0) - (a.likes || 0));
+                }
+
+                const commentsList = document.getElementById('commentsList');
+                const noComments = document.getElementById('noComments');
+                const commentsCount = document.getElementById('commentsCount');
+
+                commentsCount.textContent = `${comments.length} 則留言`;
+
+                if (sortedComments.length === 0) {
+                    commentsList.style.display = 'none';
+                    noComments.style.display = 'block';
+                    return;
+                }
+
+                commentsList.style.display = 'block';
+                noComments.style.display = 'none';
+
+                commentsList.innerHTML = sortedComments.map(comment => `
+                    <div class="comment-item">
+                        <div class="comment-avatar-small">
+                            <span>${getUserInitial(comment.author)}</span>
+                        </div>
+                        <div class="comment-content">
+                            <div class="comment-header">
+                                <span class="comment-author">${comment.author}</span>
+                                <span class="comment-date">${formatCommentDate(comment.createdAt)}</span>
+                            </div>
+                            <div class="comment-text">${escapeHtml(comment.text || comment.content)}</div>
+                            <div class="comment-actions">
+                                <button class="comment-action-btn" onclick="likeComment('${comment.id}')">
+                                    <span>👍</span> ${comment.likes || 0}
+                                </button>
+                                <button class="comment-action-btn" onclick="replyComment('${comment.id}', '${comment.author}')">
+                                    回覆
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            }
         }
 
         // 提交留言
-        function submitComment() {
+        async function submitComment() {
             const input = document.getElementById('commentInput');
             const text = input.value.trim();
             
@@ -486,30 +541,58 @@
             }
 
             const comment = {
-                id: Date.now().toString(),
                 author: getCurrentUser(),
-                text: text,
-                likes: 0,
-                createdAt: new Date().toISOString()
+                content: text
             };
 
-            const comments = JSON.parse(localStorage.getItem(`comments_${contentId}`) || '[]');
-            comments.push(comment);
-            localStorage.setItem(`comments_${contentId}`, JSON.stringify(comments));
-
-            input.value = '';
-            loadComments();
+            try {
+                const result = await addCommentToSupabase(contentId, comment);
+                if (result.success) {
+                    input.value = '';
+                    await loadComments();
+                } else {
+                    alert('留言提交失敗：' + result.message);
+                }
+            } catch (error) {
+                console.error('提交留言失敗:', error);
+                // 備援：使用 localStorage
+                const commentData = {
+                    id: Date.now().toString(),
+                    author: comment.author,
+                    text: comment.content,
+                    createdAt: new Date().toISOString(),
+                    likes: 0
+                };
+                const comments = JSON.parse(localStorage.getItem(`comments_${contentId}`) || '[]');
+                comments.push(commentData);
+                localStorage.setItem(`comments_${contentId}`, JSON.stringify(comments));
+                input.value = '';
+                await loadComments();
+            }
         }
 
         // 點讚留言
-        function likeComment(commentId) {
-            const comments = JSON.parse(localStorage.getItem(`comments_${contentId}`) || '[]');
-            const comment = comments.find(c => c.id === commentId);
-            
-            if (comment) {
-                comment.likes = (comment.likes || 0) + 1;
-                localStorage.setItem(`comments_${contentId}`, JSON.stringify(comments));
-                loadComments();
+        async function likeComment(commentId) {
+            try {
+                const comments = await loadCommentsFromSupabase(contentId);
+                const comment = comments.find(c => c.id === commentId);
+                
+                if (comment) {
+                    const newLikes = (comment.likes || 0) + 1;
+                    await updateCommentInSupabase(commentId, { likes: newLikes });
+                    await loadComments();
+                }
+            } catch (error) {
+                console.error('點讚留言失敗:', error);
+                // 備援：使用 localStorage
+                const comments = JSON.parse(localStorage.getItem(`comments_${contentId}`) || '[]');
+                const comment = comments.find(c => c.id === commentId);
+                
+                if (comment) {
+                    comment.likes = (comment.likes || 0) + 1;
+                    localStorage.setItem(`comments_${contentId}`, JSON.stringify(comments));
+                    await loadComments();
+                }
             }
         }
 
