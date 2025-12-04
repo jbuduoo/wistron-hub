@@ -360,7 +360,13 @@
         <!-- 表單欄位管理 -->
         <div id="fieldsTab" class="tab-content">
             <div class="config-section">
-                <h3>表單欄位配置</h3>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                    <h3>表單欄位配置</h3>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button class="btn-small" onclick="showAddPreview()" style="background: #858ae8; color: white; border: none; padding: 0.4rem 0.8rem;">新增預覽</button>
+                        <button class="btn-small" onclick="showDisplayPreview()" style="background: #858ae8; color: white; border: none; padding: 0.4rem 0.8rem;">展示預覽</button>
+                    </div>
+                </div>
                 <div id="fieldsByContentType">
                     <!-- 動態生成 -->
                 </div>
@@ -570,12 +576,25 @@
         </div>
     </div>
 
+    <!-- 預覽 Modal -->
+    <div id="previewModal" class="modal">
+        <div class="modal-content" style="max-width: 900px; max-height: 90vh;">
+            <div class="modal-header">
+                <h3 id="previewModalTitle">表單預覽</h3>
+                <button class="close-modal" onclick="closePreviewModal()">&times;</button>
+            </div>
+            <div id="previewContent" style="max-height: 80vh; overflow-y: auto;">
+                <!-- 預覽內容將在這裡動態生成 -->
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/supabase-config.js?v=2"></script>
     <script src="js/supabase-api.js?v=3"></script>
     <script src="js/auth.js?v=2"></script>
     <script src="js/admin-api.js?v=3"></script>
-    <script src="js/admin-ui.js?v=8"></script>
+    <script src="js/admin-ui.js?v=9"></script>
 </body>
 </html>
 

@@ -1203,3 +1203,250 @@ async function selectTemplate(templateId) {
     }
 }
 
+// ========== 預覽功能 ==========
+
+// 顯示新增預覽（模擬新增內容的表單）
+function showAddPreview() {
+    const modal = document.getElementById('previewModal');
+    const previewContent = document.getElementById('previewContent');
+    const modalTitle = document.getElementById('previewModalTitle');
+    
+    if (!modal || !previewContent) return;
+    
+    modalTitle.textContent = '新增內容預覽';
+    
+    // 生成預覽 HTML（模擬 upload.html 的表單）
+    previewContent.innerHTML = generateFormPreview('add');
+    
+    modal.classList.add('active');
+}
+
+// 顯示展示預覽（模擬展示頁面的內容卡片）
+function showDisplayPreview() {
+    const modal = document.getElementById('previewModal');
+    const previewContent = document.getElementById('previewContent');
+    const modalTitle = document.getElementById('previewModalTitle');
+    
+    if (!modal || !previewContent) return;
+    
+    modalTitle.textContent = '內容展示預覽';
+    
+    // 生成預覽 HTML（模擬 index.html 的內容卡片）
+    previewContent.innerHTML = generateDisplayPreview();
+    
+    modal.classList.add('active');
+}
+
+// 生成表單預覽 HTML
+function generateFormPreview(mode = 'add') {
+    // 獲取當前配置的欄位
+    const contentTypes = ['news', 'video', 'article', 'suggestion', 'project', 'job', 'expert'];
+    const typeLabels = {
+        'news': '📢 最新消息',
+        'video': '🎬 影片分享',
+        'article': '📄 文章分享',
+        'suggestion': '💰 懸賞區',
+        'project': '💻 作品分享',
+        'job': '🤝 專案支援及技能媒合',
+        'expert': '🤝 找內部專家'
+    };
+    
+    let html = `
+        <div style="padding: 1rem;">
+            <div style="margin-bottom: 1rem;">
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 500; color: #333;">選擇內容類型查看預覽：</label>
+                <select id="previewContentType" style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px; font-size: 0.9rem;" onchange="updateFormPreview()">
+                    <option value="">請選擇內容類型</option>
+                    ${contentTypes.map(type => `<option value="${type}">${typeLabels[type]}</option>`).join('')}
+                </select>
+            </div>
+            <div id="formPreviewContainer" style="background: #f9f9f9; padding: 1.5rem; border-radius: 8px; border: 1px solid #e5e5e5;">
+                <p style="color: #999; text-align: center; padding: 2rem;">請選擇內容類型以查看表單預覽</p>
+            </div>
+        </div>
+    `;
+    
+    return html;
+}
+
+// 更新表單預覽
+async function updateFormPreview() {
+    const contentType = document.getElementById('previewContentType').value;
+    const container = document.getElementById('formPreviewContainer');
+    
+    if (!contentType || !container) return;
+    
+    // 獲取該內容類型的欄位
+    const fields = formFields.filter(f => 
+        f.contentType === contentType && f.enabled
+    ).sort((a, b) => a.order - b.order);
+    
+    if (fields.length === 0) {
+        container.innerHTML = '<p style="color: #999; text-align: center; padding: 2rem;">此內容類型目前沒有配置欄位</p>';
+        return;
+    }
+    
+    // 使用與 upload-form-dynamic.js 相同的邏輯生成欄位 HTML
+    let fieldsHtml = `
+        <form style="max-width: 600px; margin: 0 auto; background: white; padding: 1.5rem; border-radius: 8px;">
+            <div class="form-group form-group-inline" style="margin-bottom: 1rem;">
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 500; color: #333;">內容類型： <span style="color: #ff4444;">*</span></label>
+                <select disabled style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px; width: 100%; background: #f5f5f5;">
+                    <option>${getContentTypeLabel(contentType)}</option>
+                </select>
+            </div>
+    `;
+    
+    fields.forEach(field => {
+        if (field.fieldKey === 'contentType') return;
+        fieldsHtml += generatePreviewFieldHTML(field);
+    });
+    
+    fieldsHtml += '</form>';
+    container.innerHTML = fieldsHtml;
+}
+
+// 生成預覽欄位 HTML（簡化版，不包含實際功能）
+function generatePreviewFieldHTML(field) {
+    const requiredStar = field.required ? '<span style="color: #ff4444;">*</span>' : '';
+    const requiredAttr = field.required ? 'required' : '';
+    
+    let fieldHtml = '';
+    
+    switch (field.fieldType) {
+        case 'text':
+        case 'url':
+            fieldHtml = `
+                <div class="form-group form-group-inline" style="margin-bottom: 1rem;">
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 500; color: #333;">${field.label}： ${requiredStar}</label>
+                    <input type="${field.fieldType}" placeholder="${field.placeholder || ''}" ${requiredAttr} 
+                           style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px; background: #f5f5f5;" disabled>
+                </div>
+            `;
+            break;
+            
+        case 'textarea':
+            fieldHtml = `
+                <div class="form-group" style="margin-bottom: 1rem;">
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 500; color: #333;">${field.label}： ${requiredStar}</label>
+                    <textarea rows="4" placeholder="${field.placeholder || ''}" ${requiredAttr}
+                              style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px; background: #f5f5f5; resize: vertical;" disabled></textarea>
+                </div>
+            `;
+            break;
+            
+        case 'select':
+            const optionsHtml = field.options ? field.options.map(opt => {
+                const value = typeof opt === 'string' ? opt : opt.value;
+                const label = typeof opt === 'string' ? opt : opt.label;
+                return `<option value="${value}">${label}</option>`;
+            }).join('') : '';
+            fieldHtml = `
+                <div class="form-group form-group-inline" style="margin-bottom: 1rem;">
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 500; color: #333;">${field.label}： ${requiredStar}</label>
+                    <select ${requiredAttr} style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px; background: #f5f5f5;" disabled>
+                        <option value="">請選擇</option>
+                        ${optionsHtml}
+                    </select>
+                </div>
+            `;
+            break;
+            
+        case 'date':
+        case 'datetime-local':
+            fieldHtml = `
+                <div class="form-group form-group-inline" style="margin-bottom: 1rem;">
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 500; color: #333;">${field.label}： ${requiredStar}</label>
+                    <input type="${field.fieldType}" ${requiredAttr}
+                           style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px; background: #f5f5f5;" disabled>
+                </div>
+            `;
+            break;
+            
+        case 'file':
+            fieldHtml = `
+                <div class="form-group" style="margin-bottom: 1rem;">
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 500; color: #333;">${field.label}： ${requiredStar}</label>
+                    <div style="border: 2px dashed #ddd; padding: 2rem; text-align: center; border-radius: 4px; background: #fafafa;">
+                        <span style="font-size: 2rem;">📎</span>
+                        <p style="color: #999; margin-top: 0.5rem; margin-bottom: 0;">選擇檔案（影片或圖片）</p>
+                    </div>
+                </div>
+            `;
+            break;
+            
+        case 'editor':
+            fieldHtml = `
+                <div class="form-group" style="margin-bottom: 1rem;">
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 500; color: #333;">${field.label}： ${requiredStar}</label>
+                    <div style="border: 1px solid #ddd; border-radius: 4px; padding: 1rem; min-height: 200px; background: white;">
+                        <div style="background: #f5f5f5; padding: 0.5rem; border-bottom: 1px solid #ddd; margin: -1rem -1rem 1rem -1rem; border-radius: 4px 4px 0 0;">
+                            <span style="font-size: 0.85rem; color: #666;">富文本編輯器工具列</span>
+                        </div>
+                        <p style="color: #999; margin: 0;">富文本編輯器預覽區域</p>
+                    </div>
+                </div>
+            `;
+            break;
+            
+        default:
+            fieldHtml = `
+                <div class="form-group form-group-inline" style="margin-bottom: 1rem;">
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 500; color: #333;">${field.label}： ${requiredStar}</label>
+                    <input type="text" placeholder="${field.placeholder || ''}" ${requiredAttr}
+                           style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px; background: #f5f5f5;" disabled>
+                </div>
+            `;
+    }
+    
+    return fieldHtml;
+}
+
+// 生成展示預覽 HTML（模擬內容卡片）
+function generateDisplayPreview() {
+    return `
+        <div style="padding: 1rem;">
+            <div style="background: white; border-radius: 8px; padding: 1.5rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                <h4 style="margin-top: 0; color: #333; margin-bottom: 1rem;">內容卡片預覽</h4>
+                <div style="border: 1px solid #e5e5e5; border-radius: 8px; padding: 1rem; margin-top: 1rem; background: #fafafa;">
+                    <div style="display: flex; align-items: center; margin-bottom: 0.5rem;">
+                        <span style="font-size: 1.5rem; margin-right: 0.5rem;">📢</span>
+                        <span style="font-weight: 500; color: #333; font-size: 1.1rem;">標題範例</span>
+                    </div>
+                    <div style="color: #666; font-size: 0.9rem; margin-bottom: 0.5rem;">
+                        作者：範例作者
+                    </div>
+                    <div style="color: #999; font-size: 0.85rem; margin-bottom: 1rem;">
+                        時間：2024-01-01 12:00
+                    </div>
+                    <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #e5e5e5;">
+                        <p style="color: #666; line-height: 1.6; margin: 0;">這是內容描述範例，會根據配置的欄位動態顯示...</p>
+                    </div>
+                </div>
+                <p style="color: #999; font-size: 0.85rem; margin-top: 1rem; text-align: center; padding-top: 1rem; border-top: 1px solid #e5e5e5;">
+                    此預覽展示內容卡片的基本結構，實際顯示會根據配置的欄位動態生成
+                </p>
+            </div>
+        </div>
+    `;
+}
+
+// 關閉預覽 Modal
+function closePreviewModal() {
+    document.getElementById('previewModal').classList.remove('active');
+}
+
+// 獲取內容類型標籤
+function getContentTypeLabel(type) {
+    const labels = {
+        'news': '📢 最新消息',
+        'video': '🎬 影片分享',
+        'article': '📄 文章分享',
+        'suggestion': '💰 懸賞區',
+        'project': '💻 作品分享',
+        'job': '🤝 專案支援及技能媒合',
+        'expert': '🤝 找內部專家'
+    };
+    return labels[type] || type;
+}
+
