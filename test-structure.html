@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>專案結構測試</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            border-bottom: 3px solid #3b82f6;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #555;
+            margin-top: 0;
+        }
+        .test-item {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .test-item.pass {
+            background: #d4edda;
+            color: #155724;
+        }
+        .test-item.fail {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .test-item.warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+        .status {
+            font-weight: bold;
+        }
+        .summary {
+            background: #e7f3ff;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        .summary h3 {
+            margin-top: 0;
+            color: #004085;
+        }
+        button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+        button:hover {
+            background: #2563eb;
+        }
+        pre {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 專案結構測試工具</h1>
+    
+    <div class="test-container">
+        <h2>1. 文件結構測試</h2>
+        <div id="fileStructureTest"></div>
+    </div>
+    
+    <div class="test-container">
+        <h2>2. HTML 路徑引用測試</h2>
+        <div id="pathReferenceTest"></div>
+    </div>
+    
+    <div class="test-container">
+        <h2>3. JavaScript 文件載入測試</h2>
+        <div id="jsLoadTest"></div>
+    </div>
+    
+    <div class="test-container">
+        <h2>4. CSS 文件載入測試</h2>
+        <div id="cssLoadTest"></div>
+    </div>
+    
+    <div class="test-container">
+        <h2>5. 語法檢查</h2>
+        <div id="syntaxTest"></div>
+    </div>
+    
+    <div class="summary" id="summary"></div>
+    
+    <button onclick="runAllTests()">🔄 重新執行所有測試</button>
+    
+    <script>
+        const tests = {
+            fileStructure: [],
+            pathReferences: [],
+            jsLoad: [],
+            cssLoad: [],
+            syntax: []
+        };
+        
+        // 測試文件結構
+        async function testFileStructure() {
+            const requiredFiles = {
+                'js/auth.js': '認證模組',
+                'js/script.js': '主要腳本',
+                'js/supabase-api.js': 'Supabase API',
+                'js/supabase-config.js': 'Supabase 設定',
+                'js/github-api.js': 'GitHub API',
+                'css/styles.css': '樣式表'
+            };
+            
+            const htmlFiles = ['index.html', 'upload.html', 'detail.html', 'login.html', 'register.html', 'test-supabase.html'];
+            
+            tests.fileStructure = [];
+            
+            // 檢查 JS 和 CSS 文件
+            for (const [file, description] of Object.entries(requiredFiles)) {
+                try {
+                    const response = await fetch(file, { method: 'HEAD' });
+                    if (response.ok) {
+                        tests.fileStructure.push({ 
+                            name: file, 
+                            status: 'pass', 
+                            message: `✅ ${description} 存在` 
+                        });
+                    } else {
+                        tests.fileStructure.push({ 
+                            name: file, 
+                            status: 'fail', 
+                            message: `❌ ${description} 不存在 (${response.status})` 
+                        });
+                    }
+                } catch (error) {
+                    tests.fileStructure.push({ 
+                        name: file, 
+                        status: 'fail', 
+                        message: `❌ ${description} 無法訪問: ${error.message}` 
+                    });
+                }
+            }
+            
+            // 檢查 HTML 文件
+            for (const htmlFile of htmlFiles) {
+                try {
+                    const response = await fetch(htmlFile, { method: 'HEAD' });
+                    if (response.ok) {
+                        tests.fileStructure.push({ 
+                            name: htmlFile, 
+                            status: 'pass', 
+                            message: `✅ ${htmlFile} 存在` 
+                        });
+                    } else {
+                        tests.fileStructure.push({ 
+                            name: htmlFile, 
+                            status: 'fail', 
+                            message: `❌ ${htmlFile} 不存在` 
+                        });
+                    }
+                } catch (error) {
+                    tests.fileStructure.push({ 
+                        name: htmlFile, 
+                        status: 'fail', 
+                        message: `❌ ${htmlFile} 無法訪問` 
+                    });
+                }
+            }
+            
+            displayResults('fileStructureTest', tests.fileStructure);
+        }
+        
+        // 測試 HTML 路徑引用
+        async function testPathReferences() {
+            const htmlFiles = ['index.html', 'upload.html', 'detail.html', 'login.html', 'register.html', 'test-supabase.html'];
+            tests.pathReferences = [];
+            
+            for (const htmlFile of htmlFiles) {
+                try {
+                    const response = await fetch(htmlFile);
+                    const html = await response.text();
+                    
+                    // 檢查 CSS 路徑
+                    const cssMatches = html.match(/href=["']([^"']*\.css[^"']*)["']/g) || [];
+                    const cssPaths = cssMatches.map(m => m.match(/href=["']([^"']+)["']/)[1]);
+                    
+                    // 檢查 JS 路徑
+                    const jsMatches = html.match(/src=["']([^"']*\.js[^"']*)["']/g) || [];
+                    const jsPaths = jsMatches.map(m => m.match(/src=["']([^"']+)["']/)[1]).filter(p => !p.includes('cdn.jsdelivr.net'));
+                    
+                    let hasError = false;
+                    let errors = [];
+                    
+                    // 檢查 CSS 路徑
+                    for (const cssPath of cssPaths) {
+                        if (!cssPath.startsWith('css/') && cssPath !== 'favicon.svg') {
+                            hasError = true;
+                            errors.push(`CSS 路徑錯誤: ${cssPath} (應該以 css/ 開頭)`);
+                        }
+                    }
+                    
+                    // 檢查 JS 路徑
+                    for (const jsPath of jsPaths) {
+                        if (!jsPath.startsWith('js/') && !jsPath.startsWith('http')) {
+                            hasError = true;
+                            errors.push(`JS 路徑錯誤: ${jsPath} (應該以 js/ 開頭)`);
+                        }
+                    }
+                    
+                    if (hasError) {
+                        tests.pathReferences.push({
+                            name: htmlFile,
+                            status: 'fail',
+                            message: `❌ 路徑引用錯誤:\n${errors.join('\n')}`
+                        });
+                    } else {
+                        tests.pathReferences.push({
+                            name: htmlFile,
+                            status: 'pass',
+                            message: `✅ 所有路徑引用正確\nCSS: ${cssPaths.length} 個\nJS: ${jsPaths.length} 個`
+                        });
+                    }
+                } catch (error) {
+                    tests.pathReferences.push({
+                        name: htmlFile,
+                        status: 'fail',
+                        message: `❌ 無法讀取文件: ${error.message}`
+                    });
+                }
+            }
+            
+            displayResults('pathReferenceTest', tests.pathReferences);
+        }
+        
+        // 測試 JavaScript 文件載入
+        async function testJSLoad() {
+            const jsFiles = [
+                'js/supabase-config.js',
+                'js/supabase-api.js',
+                'js/script.js',
+                'js/auth.js'
+            ];
+            
+            tests.jsLoad = [];
+            
+            for (const jsFile of jsFiles) {
+                try {
+                    const response = await fetch(jsFile);
+                    if (response.ok) {
+                        const content = await response.text();
+                        
+                        // 簡單的語法檢查
+                        let syntaxErrors = [];
+                        
+                        // 檢查是否有未閉合的括號
+                        const openBraces = (content.match(/{/g) || []).length;
+                        const closeBraces = (content.match(/}/g) || []).length;
+                        if (openBraces !== closeBraces) {
+                            syntaxErrors.push(`大括號不匹配 (開: ${openBraces}, 閉: ${closeBraces})`);
+                        }
+                        
+                        const openParens = (content.match(/\(/g) || []).length;
+                        const closeParens = (content.match(/\)/g) || []).length;
+                        if (openParens !== closeParens) {
+                            syntaxErrors.push(`小括號不匹配 (開: ${openParens}, 閉: ${closeParens})`);
+                        }
+                        
+                        if (syntaxErrors.length > 0) {
+                            tests.jsLoad.push({
+                                name: jsFile,
+                                status: 'warning',
+                                message: `⚠️ 載入成功，但有語法問題:\n${syntaxErrors.join('\n')}`
+                            });
+                        } else {
+                            tests.jsLoad.push({
+                                name: jsFile,
+                                status: 'pass',
+                                message: `✅ 載入成功 (${Math.round(content.length / 1024)} KB)`
+                            });
+                        }
+                    } else {
+                        tests.jsLoad.push({
+                            name: jsFile,
+                            status: 'fail',
+                            message: `❌ 無法載入 (${response.status})`
+                        });
+                    }
+                } catch (error) {
+                    tests.jsLoad.push({
+                        name: jsFile,
+                        status: 'fail',
+                        message: `❌ 載入失敗: ${error.message}`
+                    });
+                }
+            }
+            
+            displayResults('jsLoadTest', tests.jsLoad);
+        }
+        
+        // 測試 CSS 文件載入
+        async function testCSSLoad() {
+            tests.cssLoad = [];
+            
+            try {
+                const response = await fetch('css/styles.css');
+                if (response.ok) {
+                    const content = await response.text();
+                    
+                    // 檢查 CSS 語法
+                    let syntaxErrors = [];
+                    
+                    // 檢查是否有未閉合的大括號
+                    const openBraces = (content.match(/{/g) || []).length;
+                    const closeBraces = (content.match(/}/g) || []).length;
+                    if (openBraces !== closeBraces) {
+                        syntaxErrors.push(`大括號不匹配 (開: ${openBraces}, 閉: ${closeBraces})`);
+                    }
+                    
+                    if (syntaxErrors.length > 0) {
+                        tests.cssLoad.push({
+                            name: 'css/styles.css',
+                            status: 'warning',
+                            message: `⚠️ 載入成功，但有語法問題:\n${syntaxErrors.join('\n')}`
+                        });
+                    } else {
+                        tests.cssLoad.push({
+                            name: 'css/styles.css',
+                            status: 'pass',
+                            message: `✅ 載入成功 (${Math.round(content.length / 1024)} KB)`
+                        });
+                    }
+                } else {
+                    tests.cssLoad.push({
+                        name: 'css/styles.css',
+                        status: 'fail',
+                        message: `❌ 無法載入 (${response.status})`
+                    });
+                }
+            } catch (error) {
+                tests.cssLoad.push({
+                    name: 'css/styles.css',
+                    status: 'fail',
+                    message: `❌ 載入失敗: ${error.message}`
+                });
+            }
+            
+            displayResults('cssLoadTest', tests.cssLoad);
+        }
+        
+        // 顯示結果
+        function displayResults(containerId, results) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = results.map(result => `
+                <div class="test-item ${result.status}">
+                    <div>
+                        <strong>${result.name}</strong>
+                        <pre style="margin: 5px 0 0 0; background: transparent; padding: 0;">${result.message}</pre>
+                    </div>
+                    <span class="status">${result.status === 'pass' ? '✅' : result.status === 'fail' ? '❌' : '⚠️'}</span>
+                </div>
+            `).join('');
+        }
+        
+        // 顯示總結
+        function displaySummary() {
+            const allTests = [
+                ...tests.fileStructure,
+                ...tests.pathReferences,
+                ...tests.jsLoad,
+                ...tests.cssLoad
+            ];
+            
+            const passed = allTests.filter(t => t.status === 'pass').length;
+            const failed = allTests.filter(t => t.status === 'fail').length;
+            const warnings = allTests.filter(t => t.status === 'warning').length;
+            const total = allTests.length;
+            
+            const summary = document.getElementById('summary');
+            summary.innerHTML = `
+                <h3>📊 測試總結</h3>
+                <p><strong>總測試數:</strong> ${total}</p>
+                <p style="color: #155724;"><strong>✅ 通過:</strong> ${passed}</p>
+                <p style="color: #721c24;"><strong>❌ 失敗:</strong> ${failed}</p>
+                <p style="color: #856404;"><strong>⚠️ 警告:</strong> ${warnings}</p>
+                <p><strong>成功率:</strong> ${total > 0 ? Math.round((passed / total) * 100) : 0}%</p>
+                ${failed === 0 ? '<p style="color: #155724; font-weight: bold;">🎉 所有測試通過！可以安全地提交到 Git。</p>' : '<p style="color: #721c24; font-weight: bold;">⚠️ 有測試失敗，請先修復問題再提交。</p>'}
+            `;
+        }
+        
+        // 執行所有測試
+        async function runAllTests() {
+            document.getElementById('summary').innerHTML = '<p>測試中...</p>';
+            
+            await testFileStructure();
+            await testPathReferences();
+            await testJSLoad();
+            await testCSSLoad();
+            
+            displaySummary();
+        }
+        
+        // 頁面載入時自動執行測試
+        window.addEventListener('DOMContentLoaded', runAllTests);
+    </script>
+</body>
+</html>
+
+

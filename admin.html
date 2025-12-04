@@ -10,29 +10,29 @@
         .admin-container {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 2rem;
+            padding: 1rem;
         }
         .admin-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 2rem;
-            padding-bottom: 1rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
             border-bottom: 2px solid #e5e5e5;
         }
         .admin-tabs {
             display: flex;
-            gap: 1rem;
-            margin-bottom: 2rem;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
             border-bottom: 1px solid #e5e5e5;
         }
         .admin-tab {
-            padding: 0.75rem 1.5rem;
+            padding: 0.5rem 1rem;
             background: none;
             border: none;
             border-bottom: 2px solid transparent;
             cursor: pointer;
-            font-size: 1rem;
+            font-size: 0.9rem;
             color: #666;
             transition: all 0.3s;
         }
@@ -52,14 +52,15 @@
         .config-section {
             background: white;
             border-radius: 8px;
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
         .config-section h3 {
             margin-top: 0;
-            margin-bottom: 1rem;
+            margin-bottom: 0.75rem;
             color: #333;
+            font-size: 1rem;
         }
         .item-list {
             list-style: none;
@@ -69,11 +70,11 @@
         .item-list-item {
             display: flex;
             align-items: center;
-            padding: 1rem;
+            padding: 0.75rem;
             background: #f9f9f9;
             border-radius: 6px;
-            margin-bottom: 0.5rem;
-            gap: 1rem;
+            margin-bottom: 0.4rem;
+            gap: 0.75rem;
         }
         .item-list-item.dragging {
             opacity: 0.5;
@@ -87,27 +88,28 @@
             flex: 1;
             display: flex;
             align-items: center;
-            gap: 1rem;
+            gap: 0.75rem;
         }
         .item-icon {
-            font-size: 1.5rem;
+            font-size: 1.2rem;
         }
         .item-label {
             font-weight: 500;
             color: #333;
+            font-size: 0.9rem;
         }
         .item-filter {
             color: #666;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             font-family: monospace;
         }
         .item-actions {
             display: flex;
-            gap: 0.5rem;
+            gap: 0.4rem;
         }
         .btn-small {
-            padding: 0.4rem 0.8rem;
-            font-size: 0.9rem;
+            padding: 0.3rem 0.6rem;
+            font-size: 0.85rem;
             border-radius: 4px;
             border: 1px solid #ddd;
             background: white;
@@ -126,35 +128,36 @@
             color: white;
         }
         .btn-add {
-            padding: 0.75rem 1.5rem;
+            padding: 0.5rem 1rem;
             background: #858ae8;
             color: white;
             border: none;
             border-radius: 6px;
             cursor: pointer;
-            font-size: 1rem;
-            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
         }
         .btn-add:hover {
             background: #6b70d4;
         }
         .form-group-admin {
-            margin-bottom: 1rem;
+            margin-bottom: 0.75rem;
         }
         .form-group-admin label {
             display: block;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.4rem;
             font-weight: 500;
             color: #333;
+            font-size: 0.9rem;
         }
         .form-group-admin input,
         .form-group-admin select,
         .form-group-admin textarea {
             width: 100%;
-            padding: 0.5rem;
+            padding: 0.4rem;
             border: 1px solid #ddd;
             border-radius: 4px;
-            font-size: 1rem;
+            font-size: 0.9rem;
         }
         .form-group-admin input[type="checkbox"] {
             width: auto;
@@ -162,7 +165,7 @@
         .form-row {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 1rem;
+            gap: 0.75rem;
         }
         .modal {
             display: none;
@@ -182,7 +185,7 @@
         .modal-content {
             background: white;
             border-radius: 8px;
-            padding: 2rem;
+            padding: 1.25rem;
             max-width: 600px;
             width: 90%;
             max-height: 90vh;
@@ -192,10 +195,11 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 1.5rem;
+            margin-bottom: 1rem;
         }
         .modal-header h3 {
             margin: 0;
+            font-size: 1.1rem;
         }
         .close-modal {
             background: none;
@@ -205,32 +209,33 @@
             color: #999;
         }
         .content-type-group {
-            margin-bottom: 2rem;
+            margin-bottom: 1rem;
         }
         .content-type-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 1rem;
+            padding: 0.75rem;
             background: #f0f0f0;
             border-radius: 6px;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.4rem;
             cursor: pointer;
+            font-size: 0.9rem;
         }
         .content-type-header:hover {
             background: #e5e5e5;
         }
         .content-type-fields {
-            padding-left: 1rem;
+            padding-left: 0.75rem;
         }
         .field-item {
             display: flex;
             align-items: center;
-            padding: 0.75rem;
+            padding: 0.6rem;
             background: #f9f9f9;
             border-radius: 4px;
-            margin-bottom: 0.5rem;
-            gap: 1rem;
+            margin-bottom: 0.4rem;
+            gap: 0.75rem;
         }
         .field-info {
             flex: 1;
@@ -238,25 +243,27 @@
         .field-label {
             font-weight: 500;
             color: #333;
+            font-size: 0.9rem;
         }
         .field-key {
             color: #666;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             font-family: monospace;
         }
         .required-badge {
             display: inline-block;
-            padding: 0.2rem 0.5rem;
+            padding: 0.15rem 0.4rem;
             background: #ff4444;
             color: white;
             border-radius: 3px;
-            font-size: 0.75rem;
-            margin-left: 0.5rem;
+            font-size: 0.7rem;
+            margin-left: 0.4rem;
         }
         .enabled-toggle {
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 0.4rem;
+            font-size: 0.85rem;
         }
         .toggle-switch {
             position: relative;
@@ -285,9 +292,10 @@
             left: 22px;
         }
         .alert {
-            padding: 1rem;
+            padding: 0.75rem;
             border-radius: 6px;
-            margin-bottom: 1rem;
+            margin-bottom: 0.75rem;
+            font-size: 0.9rem;
         }
         .alert-success {
             background: #d4edda;
@@ -334,7 +342,7 @@
         <!-- 側邊欄管理 -->
         <div id="sidebarTab" class="tab-content active">
             <div class="config-section">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
                     <h3>導航項目列表</h3>
                     <button class="btn-add" onclick="showAddSidebarModal()">+ 新增項目</button>
                 </div>
@@ -357,11 +365,11 @@
         <!-- 欄位內容模板管理 -->
         <div id="templatesTab" class="tab-content">
             <div class="config-section">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
                     <h3>欄位模板庫</h3>
                     <button class="btn-add" onclick="showAddTemplateModal()">+ 新增模板</button>
                 </div>
-                <p style="color: #666; margin-bottom: 1rem;">這裡可以管理預定義的欄位模板，在「表單欄位管理」中可以快速選擇這些模板來創建欄位。</p>
+                <p style="color: #666; margin-bottom: 0.75rem; font-size: 0.85rem;">這裡可以管理預定義的欄位模板，在「表單欄位管理」中可以快速選擇這些模板來創建欄位。</p>
                 <div id="templatesList">
                     <!-- 動態生成 -->
                 </div>
@@ -400,9 +408,9 @@
                         啟用此項目
                     </label>
                 </div>
-                <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
-                    <button type="submit" class="btn-primary" style="flex: 1;">儲存</button>
-                    <button type="button" class="btn-secondary" onclick="closeSidebarModal()" style="flex: 1;">取消</button>
+                <div style="display: flex; gap: 0.75rem; margin-top: 1rem;">
+                    <button type="submit" class="btn-primary" style="flex: 1; padding: 0.5rem;">儲存</button>
+                    <button type="button" class="btn-secondary" onclick="closeSidebarModal()" style="flex: 1; padding: 0.5rem;">取消</button>
                 </div>
             </form>
         </div>
@@ -480,9 +488,9 @@
                     <label for="fieldOrder">排序順序</label>
                     <input type="number" id="fieldOrder" min="0" value="0">
                 </div>
-                <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
-                    <button type="submit" class="btn-primary" style="flex: 1;">儲存</button>
-                    <button type="button" class="btn-secondary" onclick="closeFieldModal()" style="flex: 1;">取消</button>
+                <div style="display: flex; gap: 0.75rem; margin-top: 1rem;">
+                    <button type="submit" class="btn-primary" style="flex: 1; padding: 0.5rem;">儲存</button>
+                    <button type="button" class="btn-secondary" onclick="closeFieldModal()" style="flex: 1; padding: 0.5rem;">取消</button>
                 </div>
             </form>
         </div>
@@ -537,9 +545,9 @@
                         預設為必填欄位
                     </label>
                 </div>
-                <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
-                    <button type="submit" class="btn-primary" style="flex: 1;">儲存</button>
-                    <button type="button" class="btn-secondary" onclick="closeTemplateModal()" style="flex: 1;">取消</button>
+                <div style="display: flex; gap: 0.75rem; margin-top: 1rem;">
+                    <button type="submit" class="btn-primary" style="flex: 1; padding: 0.5rem;">儲存</button>
+                    <button type="button" class="btn-secondary" onclick="closeTemplateModal()" style="flex: 1; padding: 0.5rem;">取消</button>
                 </div>
             </form>
         </div>
