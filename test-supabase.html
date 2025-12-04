@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supabase 連線測試</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft JhengHei', sans-serif;
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: #f5f5f5;
+        }
+        .test-card {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .test-card h2 {
+            margin-top: 0;
+            color: #1e40af;
+        }
+        .status {
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            margin: 0.5rem 0;
+            font-weight: 600;
+        }
+        .status.success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        .status.error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        .status.info {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+        .test-result {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: #f9fafb;
+            border-radius: 8px;
+            border-left: 4px solid #3b82f6;
+        }
+        .test-result pre {
+            background: #1f2937;
+            color: #f9fafb;
+            padding: 1rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 0.85rem;
+        }
+        button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 0.5rem 0.5rem 0.5rem 0;
+        }
+        button:hover {
+            background: #2563eb;
+        }
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3b82f6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 0.5rem;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <h1>Supabase 連線測試</h1>
+
+    <div class="test-card">
+        <h2>1. 配置檢查</h2>
+        <div id="configCheck"></div>
+    </div>
+
+    <div class="test-card">
+        <h2>2. Supabase 客戶端初始化</h2>
+        <div id="clientCheck"></div>
+    </div>
+
+    <div class="test-card">
+        <h2>3. 資料表測試</h2>
+        <button onclick="testTables()">測試資料表連線</button>
+        <div id="tableTest"></div>
+    </div>
+
+    <div class="test-card">
+        <h2>4. 讀取測試</h2>
+        <button onclick="testRead()">測試讀取資料</button>
+        <div id="readTest"></div>
+    </div>
+
+    <div class="test-card">
+        <h2>5. 寫入測試</h2>
+        <button onclick="testWrite()">測試寫入資料</button>
+        <div id="writeTest"></div>
+    </div>
+
+    <div class="test-card">
+        <h2>6. 用戶認證測試</h2>
+        <button onclick="testAuth()">測試用戶認證</button>
+        <div id="authTest"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js?v=2"></script>
+    <script src="supabase-api.js?v=2"></script>
+    <script>
+        // 測試結果顯示函數
+        function showResult(elementId, success, message, data = null) {
+            const element = document.getElementById(elementId);
+            const statusClass = success ? 'success' : 'error';
+            let html = `<div class="status ${statusClass}">${message}</div>`;
+            
+            if (data !== null) {
+                html += `<div class="test-result">
+                    <strong>回應資料：</strong>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                </div>`;
+            }
+            
+            element.innerHTML = html;
+        }
+
+        // 1. 配置檢查
+        function checkConfig() {
+            const configDiv = document.getElementById('configCheck');
+            
+            try {
+                if (typeof SUPABASE_CONFIG === 'undefined') {
+                    showResult('configCheck', false, '❌ SUPABASE_CONFIG 未定義');
+                    return false;
+                }
+
+                if (!SUPABASE_CONFIG.url || !SUPABASE_CONFIG.anonKey) {
+                    showResult('configCheck', false, '❌ Supabase 配置不完整');
+                    return false;
+                }
+
+                showResult('configCheck', true, 
+                    `✅ 配置檢查通過\nURL: ${SUPABASE_CONFIG.url.substring(0, 30)}...\nAnon Key: ${SUPABASE_CONFIG.anonKey.substring(0, 20)}...`);
+                return true;
+            } catch (error) {
+                showResult('configCheck', false, `❌ 配置檢查失敗: ${error.message}`);
+                return false;
+            }
+        }
+
+        // 2. 客戶端初始化檢查
+        function checkClient() {
+            const clientDiv = document.getElementById('clientCheck');
+            
+            try {
+                const client = initSupabase();
+                if (!client) {
+                    showResult('clientCheck', false, '❌ Supabase 客戶端初始化失敗');
+                    return false;
+                }
+
+                showResult('clientCheck', true, '✅ Supabase 客戶端初始化成功');
+                return true;
+            } catch (error) {
+                showResult('clientCheck', false, `❌ 客戶端初始化失敗: ${error.message}`);
+                return false;
+            }
+        }
+
+        // 3. 測試資料表
+        async function testTables() {
+            const tableDiv = document.getElementById('tableTest');
+            tableDiv.innerHTML = '<div class="status info">測試中...<span class="loading"></span></div>';
+
+            try {
+                const client = initSupabase();
+                if (!client) {
+                    showResult('tableTest', false, '❌ Supabase 客戶端未初始化');
+                    return;
+                }
+
+                // 測試各個資料表
+                const tables = ['contents', 'users', 'comments'];
+                const results = {};
+
+                for (const table of tables) {
+                    try {
+                        const { data, error } = await client
+                            .from(table)
+                            .select('*')
+                            .limit(1);
+
+                        if (error) {
+                            results[table] = { success: false, error: error.message };
+                        } else {
+                            results[table] = { success: true, count: data ? data.length : 0 };
+                        }
+                    } catch (err) {
+                        results[table] = { success: false, error: err.message };
+                    }
+                }
+
+                let message = '';
+                let allSuccess = true;
+                for (const [table, result] of Object.entries(results)) {
+                    if (result.success) {
+                        message += `✅ ${table} 表可訪問\n`;
+                    } else {
+                        message += `❌ ${table} 表錯誤: ${result.error}\n`;
+                        allSuccess = false;
+                    }
+                }
+
+                showResult('tableTest', allSuccess, message.trim(), results);
+            } catch (error) {
+                showResult('tableTest', false, `❌ 測試失敗: ${error.message}`);
+            }
+        }
+
+        // 4. 測試讀取
+        async function testRead() {
+            const readDiv = document.getElementById('readTest');
+            readDiv.innerHTML = '<div class="status info">測試中...<span class="loading"></span></div>';
+
+            try {
+                const data = await loadDataFromSupabase();
+                showResult('readTest', true, 
+                    `✅ 讀取成功\n共 ${data.length} 筆資料`, 
+                    data.slice(0, 3)); // 只顯示前 3 筆
+            } catch (error) {
+                showResult('readTest', false, `❌ 讀取失敗: ${error.message}`);
+            }
+        }
+
+        // 5. 測試寫入
+        async function testWrite() {
+            const writeDiv = document.getElementById('writeTest');
+            writeDiv.innerHTML = '<div class="status info">測試中...<span class="loading"></span></div>';
+
+            try {
+                const testContent = {
+                    type: 'article',
+                    title: '測試文章 - ' + new Date().toLocaleString(),
+                    description: '這是一篇測試文章，用於驗證 Supabase 寫入功能。',
+                    author: '測試用戶',
+                    content: '測試內容',
+                    hackathon: false
+                };
+
+                const result = await addContentToSupabase(testContent);
+                
+                if (result.success) {
+                    showResult('writeTest', true, 
+                        '✅ 寫入成功\n測試資料已新增到資料庫', 
+                        { id: testContent.id, title: testContent.title });
+                } else {
+                    showResult('writeTest', false, 
+                        `❌ 寫入失敗: ${result.message || '未知錯誤'}`);
+                }
+            } catch (error) {
+                showResult('writeTest', false, `❌ 寫入失敗: ${error.message}`);
+            }
+        }
+
+        // 6. 測試用戶認證
+        async function testAuth() {
+            const authDiv = document.getElementById('authTest');
+            authDiv.innerHTML = '<div class="status info">測試中...<span class="loading"></span></div>';
+
+            try {
+                const client = initSupabase();
+                if (!client) {
+                    showResult('authTest', false, '❌ Supabase 客戶端未初始化');
+                    return;
+                }
+
+                // 測試查詢 users 表
+                const { data, error } = await client
+                    .from('users')
+                    .select('id, username, name, email, points')
+                    .limit(5);
+
+                if (error) {
+                    if (error.code === '42P01') {
+                        showResult('authTest', false, 
+                            '❌ users 表不存在\n請先執行 SUPABASE_AUTH_SETUP.md 中的 SQL 語句建立資料表');
+                    } else {
+                        showResult('authTest', false, `❌ 查詢失敗: ${error.message}`);
+                    }
+                } else {
+                    showResult('authTest', true, 
+                        `✅ 用戶認證表可訪問\n目前有 ${data.length} 位用戶`, 
+                        data);
+                }
+            } catch (error) {
+                showResult('authTest', false, `❌ 測試失敗: ${error.message}`);
+            }
+        }
+
+        // 頁面載入時自動執行配置檢查
+        window.addEventListener('DOMContentLoaded', function() {
+            checkConfig();
+            checkClient();
+        });
+    </script>
+</body>
+</html>
+
