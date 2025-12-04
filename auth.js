@@ -11,6 +11,12 @@ const Auth = {
         return userStr ? JSON.parse(userStr) : null;
     },
 
+    // 檢查是否為管理員
+    isAdmin() {
+        const currentUser = this.getCurrentUser();
+        return currentUser && (currentUser.username === 'admin' || currentUser.role === 'admin');
+    },
+
     // 登入（優先使用 Supabase，失敗時使用 localStorage）
     async login(username, password) {
         // 嘗試使用 Supabase

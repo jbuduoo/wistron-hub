@@ -384,7 +384,8 @@ async function loginWithSupabase(username, password) {
             id: data.id,
             username: data.username,
             name: data.name,
-            avatar: data.avatar
+            avatar: data.avatar,
+            role: data.role || (data.username === 'admin' ? 'admin' : 'user')
         }));
 
         return { success: true, user: data };
@@ -446,7 +447,8 @@ async function registerWithSupabase(username, password, name, email) {
             id: data.id,
             username: data.username,
             name: data.name,
-            avatar: data.avatar
+            avatar: data.avatar,
+            role: data.role || 'user'
         }));
 
         return { success: true, user: data };

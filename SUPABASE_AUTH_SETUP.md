@@ -13,6 +13,7 @@ CREATE TABLE users (
   name VARCHAR(100) NOT NULL,
   email VARCHAR(255) NOT NULL UNIQUE,
   avatar TEXT,
+  role VARCHAR(50) DEFAULT 'user',
   points INTEGER DEFAULT 0,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
@@ -22,6 +23,14 @@ CREATE TABLE users (
 CREATE INDEX idx_users_username ON users(username);
 CREATE INDEX idx_users_email ON users(email);
 CREATE INDEX idx_users_points ON users(points DESC);
+CREATE INDEX idx_users_role ON users(role);
+
+-- 建立預設管理員帳號
+INSERT INTO users (username, password, name, email, role, points)
+VALUES ('admin', '1234', '系統管理員', 'admin@wistron.com', 'admin', 0)
+ON CONFLICT (username) DO UPDATE
+SET role = 'admin',
+    updated_at = NOW();
 
 -- 設定 Row Level Security (RLS)
 ALTER TABLE users ENABLE ROW LEVEL SECURITY;
