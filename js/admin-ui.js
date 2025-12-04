@@ -2,8 +2,10 @@
 
 let sidebarItems = [];
 let formFields = [];
+let fieldTemplates = [];
 let editingSidebarId = null;
 let editingFieldId = null;
+let editingTemplateId = null;
 
 // 初始化
 document.addEventListener('DOMContentLoaded', async function() {
@@ -27,9 +29,26 @@ document.addEventListener('DOMContentLoaded', async function() {
     // 載入表單欄位配置
     await loadFormFieldsConfig();
     
+    // 載入欄位模板
+    await loadFieldTemplates();
+    
     // 綁定表單提交事件
     document.getElementById('sidebarForm').addEventListener('submit', handleSidebarSubmit);
     document.getElementById('fieldForm').addEventListener('submit', handleFieldSubmit);
+    document.getElementById('templateForm').addEventListener('submit', handleTemplateSubmit);
+    
+    // 監聽模板欄位類型變化
+    const templateFieldType = document.getElementById('templateFieldType');
+    if (templateFieldType) {
+        templateFieldType.addEventListener('change', function() {
+            const optionsGroup = document.getElementById('templateOptionsGroup');
+            if (this.value === 'select') {
+                optionsGroup.style.display = 'block';
+            } else {
+                optionsGroup.style.display = 'none';
+            }
+        });
+    }
     
     // 監聽欄位類型變化
     document.getElementById('fieldType').addEventListener('change', function() {
@@ -59,6 +78,8 @@ function switchTab(tabName) {
         document.getElementById('sidebarTab').classList.add('active');
     } else if (tabName === 'fields') {
         document.getElementById('fieldsTab').classList.add('active');
+    } else if (tabName === 'templates') {
+        document.getElementById('templatesTab').classList.add('active');
     }
 }
 
@@ -461,5 +482,225 @@ function showAlert(message, type = 'success') {
     setTimeout(() => {
         alert.remove();
     }, 3000);
+}
+
+// ========== 欄位模板管理 ==========
+
+// 載入欄位模板
+async function loadFieldTemplates() {
+    fieldTemplates = await getFieldTemplates();
+    renderTemplatesList();
+}
+
+// 渲染模板列表
+function renderTemplatesList() {
+    const list = document.getElementById('templatesList');
+    if (!list) return;
+    
+    if (fieldTemplates.length === 0) {
+        list.innerHTML = '<p style="color: #999; text-align: center; padding: 2rem;">目前沒有模板，點擊「新增模板」開始創建</p>';
+        return;
+    }
+    
+    list.innerHTML = fieldTemplates.map(template => `
+        <div class="field-item">
+            <div class="field-info">
+                <div class="field-label">
+                    ${template.name}
+                    ${template.required ? '<span class="required-badge">必填</span>' : ''}
+                </div>
+                <div class="field-key">${template.fieldKey} (${template.fieldType})</div>
+            </div>
+            <div class="item-actions">
+                <button class="btn-small" onclick="editTemplate('${template.id}')">編輯</button>
+                <button class="btn-small btn-danger" onclick="deleteTemplate('${template.id}')">刪除</button>
+            </div>
+        </div>
+    `).join('');
+}
+
+// 顯示新增模板 Modal
+function showAddTemplateModal() {
+    editingTemplateId = null;
+    document.getElementById('templateModalTitle').textContent = '新增欄位模板';
+    document.getElementById('templateForm').reset();
+    document.getElementById('templateId').value = '';
+    document.getElementById('templateOptionsGroup').style.display = 'none';
+    document.getElementById('templateModal').classList.add('active');
+}
+
+// 編輯模板
+function editTemplate(id) {
+    const template = fieldTemplates.find(t => t.id === id);
+    if (!template) return;
+    
+    editingTemplateId = id;
+    document.getElementById('templateModalTitle').textContent = '編輯欄位模板';
+    document.getElementById('templateId').value = template.id;
+    document.getElementById('templateName').value = template.name;
+    document.getElementById('templateFieldKey').value = template.fieldKey;
+    document.getElementById('templateFieldType').value = template.fieldType;
+    document.getElementById('templateLabel').value = template.label;
+    document.getElementById('templatePlaceholder').value = template.placeholder || '';
+    document.getElementById('templateRequired').checked = template.required || false;
+    
+    // 處理選項
+    if (template.options && template.options.length > 0) {
+        const optionsText = template.options.map(opt => 
+            typeof opt === 'string' ? opt : `${opt.value}|${opt.label}`
+        ).join('\n');
+        document.getElementById('templateOptions').value = optionsText;
+        document.getElementById('templateOptionsGroup').style.display = 'block';
+    } else {
+        document.getElementById('templateOptions').value = '';
+        document.getElementById('templateOptionsGroup').style.display = 
+            template.fieldType === 'select' ? 'block' : 'none';
+    }
+    
+    document.getElementById('templateModal').classList.add('active');
+}
+
+// 刪除模板
+async function deleteTemplate(id) {
+    if (!confirm('確定要刪除此模板嗎？')) return;
+    
+    fieldTemplates = fieldTemplates.filter(t => t.id !== id);
+    await saveFieldTemplates(fieldTemplates);
+    renderTemplatesList();
+    showAlert('模板已刪除', 'success');
+}
+
+// 關閉模板 Modal
+function closeTemplateModal() {
+    document.getElementById('templateModal').classList.remove('active');
+}
+
+// 處理模板表單提交
+async function handleTemplateSubmit(e) {
+    e.preventDefault();
+    
+    const id = document.getElementById('templateId').value;
+    const name = document.getElementById('templateName').value.trim();
+    const fieldKey = document.getElementById('templateFieldKey').value.trim();
+    const fieldType = document.getElementById('templateFieldType').value;
+    const label = document.getElementById('templateLabel').value.trim();
+    const placeholder = document.getElementById('templatePlaceholder').value.trim();
+    const required = document.getElementById('templateRequired').checked;
+    
+    // 處理選項
+    let options = [];
+    if (fieldType === 'select') {
+        const optionsText = document.getElementById('templateOptions').value.trim();
+        if (optionsText) {
+            options = optionsText.split('\n').map(line => {
+                const parts = line.split('|');
+                if (parts.length === 2) {
+                    return { value: parts[0].trim(), label: parts[1].trim() };
+                } else {
+                    return { value: line.trim(), label: line.trim() };
+                }
+            });
+        }
+    }
+    
+    if (!name || !fieldKey || !fieldType || !label) {
+        showAlert('請填寫所有必填欄位', 'error');
+        return;
+    }
+    
+    const template = {
+        id: id || 't' + Date.now(),
+        name,
+        fieldKey,
+        fieldType,
+        label,
+        placeholder,
+        required,
+        options: options.length > 0 ? options : undefined
+    };
+    
+    if (editingTemplateId) {
+        // 更新
+        const index = fieldTemplates.findIndex(t => t.id === editingTemplateId);
+        if (index !== -1) {
+            fieldTemplates[index] = template;
+        }
+    } else {
+        // 新增
+        fieldTemplates.push(template);
+    }
+    
+    await saveFieldTemplates(fieldTemplates);
+    renderTemplatesList();
+    closeTemplateModal();
+    showAlert('儲存成功', 'success');
+}
+
+// 顯示模板選擇器
+async function showTemplateSelector() {
+    const modal = document.getElementById('templateSelectorModal');
+    const list = document.getElementById('templateSelectorList');
+    
+    if (!modal || !list) return;
+    
+    // 載入模板（如果還沒載入）
+    if (fieldTemplates.length === 0) {
+        await loadFieldTemplates();
+    }
+    
+    if (fieldTemplates.length === 0) {
+        list.innerHTML = '<p style="padding: 2rem; text-align: center; color: #999;">目前沒有模板，請先在「欄位內容」分頁中創建模板</p>';
+    } else {
+        list.innerHTML = fieldTemplates.map(template => `
+            <div class="field-item" style="cursor: pointer;" onclick="selectTemplate('${template.id}')">
+                <div class="field-info">
+                    <div class="field-label">
+                        ${template.name}
+                        ${template.required ? '<span class="required-badge">必填</span>' : ''}
+                    </div>
+                    <div class="field-key">${template.fieldKey} (${template.fieldType})</div>
+                </div>
+                <div style="color: #858ae8;">選擇</div>
+            </div>
+        `).join('');
+    }
+    
+    modal.classList.add('active');
+}
+
+// 關閉模板選擇器
+function closeTemplateSelector() {
+    document.getElementById('templateSelectorModal').classList.remove('active');
+}
+
+// 選擇模板並填入表單
+function selectTemplate(templateId) {
+    const template = fieldTemplates.find(t => t.id === templateId);
+    if (!template) return;
+    
+    // 填入表單欄位
+    document.getElementById('fieldKey').value = template.fieldKey;
+    document.getElementById('fieldType').value = template.fieldType;
+    document.getElementById('fieldLabel').value = template.label;
+    document.getElementById('fieldPlaceholder').value = template.placeholder || '';
+    document.getElementById('fieldRequired').checked = template.required || false;
+    
+    // 處理選項
+    if (template.options && template.options.length > 0) {
+        const optionsText = template.options.map(opt => 
+            typeof opt === 'string' ? opt : `${opt.value}|${opt.label}`
+        ).join('\n');
+        document.getElementById('fieldOptions').value = optionsText;
+        document.getElementById('fieldOptionsGroup').style.display = 'block';
+    } else {
+        document.getElementById('fieldOptions').value = '';
+        document.getElementById('fieldOptionsGroup').style.display = 
+            template.fieldType === 'select' ? 'block' : 'none';
+    }
+    
+    // 關閉選擇器
+    closeTemplateSelector();
+    
+    showAlert('模板已套用', 'success');
 }
 

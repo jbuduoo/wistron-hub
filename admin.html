@@ -328,6 +328,7 @@
         <div class="admin-tabs">
             <button class="admin-tab active" onclick="switchTab('sidebar')">側邊欄管理</button>
             <button class="admin-tab" onclick="switchTab('fields')">表單欄位管理</button>
+            <button class="admin-tab" onclick="switchTab('templates')">欄位內容</button>
         </div>
 
         <!-- 側邊欄管理 -->
@@ -348,6 +349,20 @@
             <div class="config-section">
                 <h3>表單欄位配置</h3>
                 <div id="fieldsByContentType">
+                    <!-- 動態生成 -->
+                </div>
+            </div>
+        </div>
+
+        <!-- 欄位內容模板管理 -->
+        <div id="templatesTab" class="tab-content">
+            <div class="config-section">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <h3>欄位模板庫</h3>
+                    <button class="btn-add" onclick="showAddTemplateModal()">+ 新增模板</button>
+                </div>
+                <p style="color: #666; margin-bottom: 1rem;">這裡可以管理預定義的欄位模板，在「表單欄位管理」中可以快速選擇這些模板來創建欄位。</p>
+                <div id="templatesList">
                     <!-- 動態生成 -->
                 </div>
             </div>
@@ -418,7 +433,10 @@
                 </div>
                 <div class="form-group-admin">
                     <label for="fieldKey">欄位鍵值 (fieldKey) <span class="required">*</span></label>
-                    <input type="text" id="fieldKey" required placeholder="例如: title, author, videoLink" pattern="[a-zA-Z0-9_]+">
+                    <div style="display: flex; gap: 0.5rem;">
+                        <input type="text" id="fieldKey" required placeholder="例如: title, author, videoLink" pattern="[a-zA-Z0-9_]+" style="flex: 1;">
+                        <button type="button" class="btn-small" onclick="showTemplateSelector()" style="white-space: nowrap;">從模板選擇</button>
+                    </div>
                     <small style="color: #666;">只能使用英文字母、數字和底線</small>
                 </div>
                 <div class="form-group-admin">
@@ -467,6 +485,76 @@
                     <button type="button" class="btn-secondary" onclick="closeFieldModal()" style="flex: 1;">取消</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- 新增/編輯欄位模板 Modal -->
+    <div id="templateModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="templateModalTitle">新增欄位模板</h3>
+                <button class="close-modal" onclick="closeTemplateModal()">&times;</button>
+            </div>
+            <form id="templateForm">
+                <input type="hidden" id="templateId">
+                <div class="form-group-admin">
+                    <label for="templateName">模板名稱 <span class="required">*</span></label>
+                    <input type="text" id="templateName" required placeholder="例如: 標題, 作者名稱">
+                </div>
+                <div class="form-group-admin">
+                    <label for="templateFieldKey">欄位鍵值 (fieldKey) <span class="required">*</span></label>
+                    <input type="text" id="templateFieldKey" required placeholder="例如: title, author" pattern="[a-zA-Z0-9_]+">
+                    <small style="color: #666;">只能使用英文字母、數字和底線</small>
+                </div>
+                <div class="form-group-admin">
+                    <label for="templateFieldType">欄位類型 <span class="required">*</span></label>
+                    <select id="templateFieldType" required>
+                        <option value="text">文字輸入 (text)</option>
+                        <option value="url">網址輸入 (url)</option>
+                        <option value="textarea">多行文字 (textarea)</option>
+                        <option value="select">下拉選單 (select)</option>
+                        <option value="date">日期 (date)</option>
+                        <option value="datetime-local">日期時間 (datetime-local)</option>
+                        <option value="file">檔案上傳 (file)</option>
+                        <option value="editor">富文本編輯器 (editor)</option>
+                    </select>
+                </div>
+                <div class="form-group-admin">
+                    <label for="templateLabel">顯示標籤 <span class="required">*</span></label>
+                    <input type="text" id="templateLabel" required placeholder="例如: 標題, 作者名稱">
+                </div>
+                <div class="form-group-admin">
+                    <label for="templatePlaceholder">提示文字</label>
+                    <input type="text" id="templatePlaceholder" placeholder="例如: 輸入標題...">
+                </div>
+                <div class="form-group-admin" id="templateOptionsGroup" style="display: none;">
+                    <label for="templateOptions">選項 (每行一個，格式: 值|顯示文字)</label>
+                    <textarea id="templateOptions" rows="5" placeholder="例如:&#10;option1|選項一&#10;option2|選項二"></textarea>
+                </div>
+                <div class="form-group-admin">
+                    <label>
+                        <input type="checkbox" id="templateRequired">
+                        預設為必填欄位
+                    </label>
+                </div>
+                <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                    <button type="submit" class="btn-primary" style="flex: 1;">儲存</button>
+                    <button type="button" class="btn-secondary" onclick="closeTemplateModal()" style="flex: 1;">取消</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 模板選擇器 Modal -->
+    <div id="templateSelectorModal" class="modal">
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-header">
+                <h3>選擇欄位模板</h3>
+                <button class="close-modal" onclick="closeTemplateSelector()">&times;</button>
+            </div>
+            <div id="templateSelectorList" style="max-height: 400px; overflow-y: auto;">
+                <!-- 動態生成模板列表 -->
+            </div>
         </div>
     </div>
 
