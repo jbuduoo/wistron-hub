@@ -258,7 +258,7 @@
             const startDate = formData.get('startDate');
             const endDate = formData.get('endDate');
             
-            // 職缺相關欄位
+            // 專案支援相關欄位
             const jobLocation = formData.get('jobLocation');
             const jobType = formData.get('jobType');
             const jobDepartment = formData.get('jobDepartment');
@@ -294,7 +294,7 @@
                 // 最新消息時間
                 startDate: startDate ? new Date(startDate).toISOString() : null,
                 endDate: endDate ? new Date(endDate).toISOString() : null,
-                // 職缺資訊
+                // 專案支援資訊
                 jobLocation: jobLocation || null,
                 jobType: jobType || null,
                 jobDepartment: jobDepartment || null,
