@@ -1361,6 +1361,7 @@ body {
     box-shadow: 0 2px 12px rgba(0,0,0,0.08);
     margin-bottom: 2rem;
     border: 1px solid #f0f0f0;
+    border-top: 1px solid #fbbf24;
 }
 
 .comments-header {
