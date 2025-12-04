@@ -482,7 +482,66 @@
             return colors[index % colors.length];
         }
 
+        // 檢查用戶是否已按讚
+        function hasUserLiked(contentId) {
+            const currentUser = Auth.getCurrentUser();
+            if (!currentUser) {
+                // 如果未登入，使用 localStorage 的 currentAuthor 作為備援
+                const author = localStorage.getItem('currentAuthor');
+                if (!author) return false;
+                const likedItems = JSON.parse(localStorage.getItem('likedItems') || '{}');
+                return likedItems[`${author}_${contentId}`] === true;
+            }
+            
+            const likedItems = JSON.parse(localStorage.getItem('likedItems') || '{}');
+            return likedItems[`${currentUser.username}_${contentId}`] === true;
+        }
+
+        // 標記用戶已按讚
+        function markUserLiked(contentId) {
+            const currentUser = Auth.getCurrentUser();
+            const userId = currentUser ? currentUser.username : localStorage.getItem('currentAuthor');
+            
+            if (!userId) return;
+            
+            const likedItems = JSON.parse(localStorage.getItem('likedItems') || '{}');
+            likedItems[`${userId}_${contentId}`] = true;
+            localStorage.setItem('likedItems', JSON.stringify(likedItems));
+        }
+
+        // 更新按讚按鈕狀態
+        function updateLikeButtonState() {
+            const likeBtn = document.getElementById('likeBtn');
+            if (!likeBtn) return;
+            
+            if (hasUserLiked(contentId)) {
+                likeBtn.style.opacity = '0.6';
+                likeBtn.disabled = true;
+                likeBtn.style.cursor = 'not-allowed';
+            } else {
+                likeBtn.style.opacity = '1';
+                likeBtn.disabled = false;
+                likeBtn.style.cursor = 'pointer';
+            }
+        }
+
         async function toggleLike() {
+            // 檢查是否已登入
+            const currentUser = Auth.getCurrentUser();
+            const author = localStorage.getItem('currentAuthor');
+            
+            if (!currentUser && !author) {
+                alert('請先登入才能按讚！');
+                window.location.href = 'login.html';
+                return;
+            }
+
+            // 檢查是否已經按過讚
+            if (hasUserLiked(contentId)) {
+                alert('您已經按過讚了！');
+                return;
+            }
+
             const contents = await loadDataFromSupabase();
             const content = contents.find(c => c.id === contentId);
             
@@ -490,9 +549,11 @@
                 content.likes = (content.likes || 0) + 1;
                 document.getElementById('detailLikes').textContent = content.likes;
                 
-                const likeBtn = document.getElementById('likeBtn');
-                likeBtn.style.opacity = '0.6';
-                likeBtn.disabled = true;
+                // 標記用戶已按讚
+                markUserLiked(contentId);
+                
+                // 更新按鈕狀態
+                updateLikeButtonState();
                 
                 // 更新到 Supabase
                 try {
