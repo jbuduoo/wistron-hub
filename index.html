@@ -192,6 +192,19 @@
         
         // 頁面載入時更新 header
         document.addEventListener('DOMContentLoaded', function() {
+            // 確保登入按鈕初始狀態正確
+            const loginBtn = document.getElementById('loginBtn');
+            const loggedInSection = document.getElementById('loggedInSection');
+            
+            // 先顯示登入按鈕（如果未登入）
+            if (loginBtn && !Auth.isLoggedIn()) {
+                loginBtn.style.display = 'block';
+            }
+            if (loggedInSection) {
+                loggedInSection.style.display = 'none';
+            }
+            
+            // 然後更新 header
             updateHeaderForAuth();
         });
     </script>

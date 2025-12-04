@@ -335,6 +335,7 @@ body {
 
 /* 主要內容區 */
 .main-content {
+    background: transparent;
     flex: 1;
 }
 
