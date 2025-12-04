@@ -551,15 +551,21 @@ function setupSort() {
 
 // 頁面載入時初始化
 if (document.getElementById('contentGrid')) {
-    initializeData().then(() => {
-        loadContent('news'); // 預設載入最新消息
-    }).catch(err => {
-        console.error('初始化失敗:', err);
-        // 即使初始化失敗，也嘗試載入內容
-        loadContent('news');
-    });
-    setupSearch();
-    setupSidebarFilter();
-    setupSort();
+    // 檢查必要的函數是否存在
+    if (typeof loadDataFromSupabase === 'undefined') {
+        console.error('錯誤：loadDataFromSupabase 函數未定義！請確認 supabase-api.js 已正確載入。');
+        alert('網站載入錯誤：請重新整理頁面（按 Ctrl+Shift+R 強制重新載入）');
+    } else {
+        initializeData().then(() => {
+            loadContent('news'); // 預設載入最新消息
+        }).catch(err => {
+            console.error('初始化失敗:', err);
+            // 即使初始化失敗，也嘗試載入內容
+            loadContent('news');
+        });
+        setupSearch();
+        setupSidebarFilter();
+        setupSort();
+    }
 }
 
