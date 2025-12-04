@@ -123,6 +123,12 @@
         <div id="authTest"></div>
     </div>
 
+    <div class="test-card">
+        <h2>7. 新資料表測試（likes, content_views, shares）</h2>
+        <button onclick="testNewTables()">測試新資料表</button>
+        <div id="newTablesTest"></div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase-config.js?v=2"></script>
     <script src="supabase-api.js?v=2"></script>
@@ -199,7 +205,7 @@
                 }
 
                 // 測試各個資料表
-                const tables = ['contents', 'users', 'comments'];
+                const tables = ['contents', 'users', 'comments', 'likes', 'content_views', 'shares'];
                 const results = {};
 
                 for (const table of tables) {
@@ -313,6 +319,100 @@
                 }
             } catch (error) {
                 showResult('authTest', false, `❌ 測試失敗: ${error.message}`);
+            }
+        }
+
+        // 7. 新資料表詳細測試
+        async function testNewTables() {
+            const tableDiv = document.getElementById('newTablesTest');
+            tableDiv.innerHTML = '<div class="status info">測試中...<span class="loading"></span></div>';
+
+            try {
+                const client = initSupabase();
+                if (!client) {
+                    showResult('newTablesTest', false, '❌ Supabase 客戶端未初始化');
+                    return;
+                }
+
+                const tablesToTest = [
+                    { name: 'likes', description: '按讚記錄表' },
+                    { name: 'content_views', description: '瀏覽記錄表' },
+                    { name: 'shares', description: '分享記錄表' }
+                ];
+
+                const results = {};
+
+                for (const table of tablesToTest) {
+                    try {
+                        // 嘗試查詢表（檢查是否存在）
+                        const { data, error, count } = await client
+                            .from(table.name)
+                            .select('*', { count: 'exact', head: true })
+                            .limit(0);
+
+                        if (error) {
+                            if (error.code === '42P01') {
+                                results[table.name] = { 
+                                    success: false, 
+                                    exists: false,
+                                    error: '表不存在',
+                                    description: table.description
+                                };
+                            } else {
+                                results[table.name] = { 
+                                    success: false, 
+                                    exists: true,
+                                    error: error.message,
+                                    description: table.description
+                                };
+                            }
+                        } else {
+                            // 表存在，獲取記錄數
+                            const { count: recordCount } = await client
+                                .from(table.name)
+                                .select('*', { count: 'exact', head: true });
+
+                            // 嘗試獲取一條樣本記錄
+                            const { data: sampleData } = await client
+                                .from(table.name)
+                                .select('*')
+                                .limit(1);
+
+                            results[table.name] = { 
+                                success: true, 
+                                exists: true,
+                                count: recordCount || 0,
+                                description: table.description,
+                                sample: sampleData && sampleData.length > 0 ? sampleData[0] : null
+                            };
+                        }
+                    } catch (err) {
+                        results[table.name] = { 
+                            success: false, 
+                            exists: false,
+                            error: err.message,
+                            description: table.description
+                        };
+                    }
+                }
+
+                let message = '';
+                let allSuccess = true;
+                for (const [tableName, result] of Object.entries(results)) {
+                    if (result.success) {
+                        message += `✅ ${result.description} (${tableName}) - 表存在，目前有 ${result.count || 0} 筆記錄\n`;
+                    } else if (result.exists === false) {
+                        message += `❌ ${result.description} (${tableName}) - 表不存在，請先執行 SQL 建立此表\n`;
+                        allSuccess = false;
+                    } else {
+                        message += `⚠️ ${result.description} (${tableName}) - 表存在但有錯誤: ${result.error}\n`;
+                        allSuccess = false;
+                    }
+                }
+
+                showResult('newTablesTest', allSuccess, message.trim(), results);
+            } catch (error) {
+                showResult('newTablesTest', false, `❌ 測試失敗: ${error.message}`);
             }
         }
 
