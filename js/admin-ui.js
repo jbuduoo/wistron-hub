@@ -313,9 +313,10 @@ async function createFormFieldsForContentType(contentType) {
         );
         
         // 複製基礎欄位並設置新的 contentType
-        const newFields = defaultBaseFields.map(field => ({
+        const timestamp = Date.now();
+        const newFields = defaultBaseFields.map((field, index) => ({
             ...field,
-            id: 'f' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+            id: 'f' + timestamp + '_' + index + '_' + Math.random().toString(36).substr(2, 5),
             contentType: contentType,
             order: field.order
         }));
@@ -323,9 +324,10 @@ async function createFormFieldsForContentType(contentType) {
         formFields.push(...newFields);
     } else {
         // 複製基礎欄位並設置新的 contentType
-        const newFields = baseFields.map(field => ({
+        const timestamp = Date.now();
+        const newFields = baseFields.map((field, index) => ({
             ...field,
-            id: 'f' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+            id: 'f' + timestamp + '_' + index + '_' + Math.random().toString(36).substr(2, 5),
             contentType: contentType,
             order: field.order
         }));
@@ -389,6 +391,18 @@ async function renderFormFields() {
         'expert': '找內部專家'
     };
     
+    // 記錄當前展開的內容類型（在重新渲染前）
+    const openContentTypes = new Set();
+    contentTypes.forEach(type => {
+        const fieldsDiv = document.getElementById(`fields_${type}`);
+        if (fieldsDiv) {
+            const computedStyle = window.getComputedStyle(fieldsDiv);
+            if (computedStyle.display !== 'none') {
+                openContentTypes.add(type);
+            }
+        }
+    });
+    
     // 生成模板選項
     const templateOptions = fieldTemplates.map(template => 
         `<option value="${template.id}">${template.name} (${template.fieldKey})</option>`
@@ -398,15 +412,19 @@ async function renderFormFields() {
         const fields = formFields.filter(f => f.contentType === type);
         const sortedFields = [...fields].sort((a, b) => a.order - b.order);
         
+        // 如果之前是展開的，保持展開狀態
+        const shouldDisplay = openContentTypes.has(type) ? 'block' : 'none';
+        
         return `
             <div class="content-type-group">
                 <div class="content-type-header" onclick="toggleContentTypeFields('${type}')">
                     <strong>${typeLabels[type]}</strong>
                     <span>(${sortedFields.length} 個欄位)</span>
                 </div>
-                <div class="content-type-fields" id="fields_${type}" style="display: none;">
+                <div class="content-type-fields" id="fields_${type}" style="display: ${shouldDisplay};">
                     ${sortedFields.map(field => `
-                        <div class="field-item">
+                        <div class="field-item" data-id="${field.id}" data-content-type="${type}">
+                            <span class="drag-handle">☰</span>
                             <div class="field-info">
                                 <div class="field-label">
                                     ${field.label}
@@ -435,6 +453,94 @@ async function renderFormFields() {
             </div>
         `;
     }).join('');
+    
+    // 初始化欄位拖拽排序
+    initFieldDragAndDrop();
+}
+
+// 欄位拖拽排序
+function initFieldDragAndDrop() {
+    const contentTypes = ['all', 'news', 'video', 'article', 'suggestion', 'project', 'job', 'expert'];
+    
+    contentTypes.forEach(type => {
+        const fieldsContainer = document.getElementById(`fields_${type}`);
+        if (!fieldsContainer) return;
+        
+        const fieldItems = fieldsContainer.querySelectorAll('.field-item');
+        let draggedElement = null;
+        
+        fieldItems.forEach(item => {
+            item.draggable = true;
+            
+            item.addEventListener('dragstart', function(e) {
+                draggedElement = this;
+                this.classList.add('dragging');
+                e.dataTransfer.effectAllowed = 'move';
+            });
+            
+            item.addEventListener('dragend', function() {
+                this.classList.remove('dragging');
+                // 更新順序
+                updateFieldOrder(type);
+            });
+            
+            item.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'move';
+                
+                // 只允許在同一內容類型內拖拽
+                const contentType = this.getAttribute('data-content-type');
+                if (draggedElement && draggedElement.getAttribute('data-content-type') === contentType) {
+                    const afterElement = getDragAfterFieldElement(fieldsContainer, e.clientY, contentType);
+                    if (afterElement == null) {
+                        // 插入到最後（在新增模板區域之前）
+                        const addTemplateDiv = fieldsContainer.querySelector('div[style*="display: flex"]');
+                        if (addTemplateDiv) {
+                            fieldsContainer.insertBefore(draggedElement, addTemplateDiv);
+                        } else {
+                            fieldsContainer.appendChild(draggedElement);
+                        }
+                    } else {
+                        fieldsContainer.insertBefore(draggedElement, afterElement);
+                    }
+                }
+            });
+        });
+    });
+}
+
+function getDragAfterFieldElement(container, y, contentType) {
+    const draggableElements = [...container.querySelectorAll(`.field-item[data-content-type="${contentType}"]:not(.dragging)`)];
+    
+    return draggableElements.reduce((closest, child) => {
+        const box = child.getBoundingClientRect();
+        const offset = y - box.top - box.height / 2;
+        
+        if (offset < 0 && offset > closest.offset) {
+            return { offset: offset, element: child };
+        } else {
+            return closest;
+        }
+    }, { offset: Number.NEGATIVE_INFINITY }).element;
+}
+
+// 更新欄位順序
+async function updateFieldOrder(contentType) {
+    const fieldsContainer = document.getElementById(`fields_${contentType}`);
+    if (!fieldsContainer) return;
+    
+    const fieldItems = fieldsContainer.querySelectorAll(`.field-item[data-content-type="${contentType}"]`);
+    
+    fieldItems.forEach((item, index) => {
+        const id = item.getAttribute('data-id');
+        const field = formFields.find(f => f.id === id);
+        if (field) {
+            field.order = index + 1;
+        }
+    });
+    
+    await saveFormFieldsConfig(formFields);
+    showAlert('欄位順序已更新', 'success');
 }
 
 function toggleContentTypeFields(type) {
