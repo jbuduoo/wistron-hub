@@ -8,6 +8,12 @@ async function getSidebarConfig() {
     try {
         const client = initSupabase();
         if (client) {
+            // 檢查是否有認證
+            const { data: { user } } = await client.auth.getUser();
+            if (!user) {
+                throw new Error('未登入');
+            }
+            
             const { data, error } = await client
                 .from('admin_config')
                 .select('*')
@@ -19,7 +25,10 @@ async function getSidebarConfig() {
             }
         }
     } catch (error) {
-        console.warn('Supabase 讀取側邊欄配置失敗，使用 localStorage:', error);
+        // 靜默處理認證錯誤，只對其他錯誤顯示警告
+        if (error.code !== 'PGRST301' && error.message !== '未登入') {
+            console.warn('Supabase 讀取側邊欄配置失敗，使用 localStorage:', error);
+        }
     }
     
     // 從 localStorage 讀取
@@ -52,11 +61,21 @@ async function saveSidebarConfig(items) {
     try {
         const client = initSupabase();
         if (client) {
+            // 檢查是否有認證
+            const { data: { user } } = await client.auth.getUser();
+            if (!user) {
+                throw new Error('未登入');
+            }
+            
             // 先刪除舊配置
-            await client
+            const { error: deleteError } = await client
                 .from('admin_config')
                 .delete()
                 .eq('config_type', 'sidebar');
+            
+            if (deleteError && deleteError.code !== 'PGRST116') {
+                throw deleteError;
+            }
             
             // 插入新配置
             const configData = items.map(item => ({
@@ -64,18 +83,23 @@ async function saveSidebarConfig(items) {
                 config_data: item
             }));
             
-            const { error } = await client
+            const { error: insertError } = await client
                 .from('admin_config')
                 .insert(configData);
             
-            if (!error) {
+            if (!insertError) {
                 // 同時更新 localStorage 作為備份
                 localStorage.setItem(storageKey, JSON.stringify(items));
                 return { success: true };
+            } else {
+                throw insertError;
             }
         }
     } catch (error) {
-        console.warn('Supabase 儲存側邊欄配置失敗，使用 localStorage:', error);
+        // 靜默處理錯誤，不顯示警告（因為這是正常的回退行為）
+        if (error.code !== 'PGRST301' && error.message !== '未登入') {
+            console.warn('Supabase 儲存側邊欄配置失敗，使用 localStorage:', error);
+        }
     }
     
     // 儲存到 localStorage
@@ -91,6 +115,12 @@ async function getFormFieldsConfig() {
     try {
         const client = initSupabase();
         if (client) {
+            // 檢查是否有認證
+            const { data: { user } } = await client.auth.getUser();
+            if (!user) {
+                throw new Error('未登入');
+            }
+            
             const { data, error } = await client
                 .from('admin_config')
                 .select('*')
@@ -102,7 +132,10 @@ async function getFormFieldsConfig() {
             }
         }
     } catch (error) {
-        console.warn('Supabase 讀取表單欄位配置失敗，使用 localStorage:', error);
+        // 靜默處理認證錯誤，只對其他錯誤顯示警告
+        if (error.code !== 'PGRST301' && error.message !== '未登入') {
+            console.warn('Supabase 讀取表單欄位配置失敗，使用 localStorage:', error);
+        }
     }
     
     // 從 localStorage 讀取
@@ -170,11 +203,21 @@ async function saveFormFieldsConfig(fields) {
     try {
         const client = initSupabase();
         if (client) {
+            // 檢查是否有認證
+            const { data: { user } } = await client.auth.getUser();
+            if (!user) {
+                throw new Error('未登入');
+            }
+            
             // 先刪除舊配置
-            await client
+            const { error: deleteError } = await client
                 .from('admin_config')
                 .delete()
                 .eq('config_type', 'form_fields');
+            
+            if (deleteError && deleteError.code !== 'PGRST116') {
+                throw deleteError;
+            }
             
             // 插入新配置
             const configData = fields.map(field => ({
@@ -182,18 +225,23 @@ async function saveFormFieldsConfig(fields) {
                 config_data: field
             }));
             
-            const { error } = await client
+            const { error: insertError } = await client
                 .from('admin_config')
                 .insert(configData);
             
-            if (!error) {
+            if (!insertError) {
                 // 同時更新 localStorage 作為備份
                 localStorage.setItem(storageKey, JSON.stringify(fields));
                 return { success: true };
+            } else {
+                throw insertError;
             }
         }
     } catch (error) {
-        console.warn('Supabase 儲存表單欄位配置失敗，使用 localStorage:', error);
+        // 靜默處理錯誤，不顯示警告（因為這是正常的回退行為）
+        if (error.code !== 'PGRST301' && error.message !== '未登入') {
+            console.warn('Supabase 儲存表單欄位配置失敗，使用 localStorage:', error);
+        }
     }
     
     // 儲存到 localStorage
@@ -209,6 +257,12 @@ async function getFieldTemplates() {
     try {
         const client = initSupabase();
         if (client) {
+            // 檢查是否有認證
+            const { data: { user } } = await client.auth.getUser();
+            if (!user) {
+                throw new Error('未登入');
+            }
+            
             const { data, error } = await client
                 .from('admin_config')
                 .select('*')
@@ -223,7 +277,10 @@ async function getFieldTemplates() {
             }
         }
     } catch (error) {
-        console.warn('Supabase 讀取欄位模板失敗，使用 localStorage:', error);
+        // 靜默處理認證錯誤，只對其他錯誤顯示警告
+        if (error.code !== 'PGRST301' && error.message !== '未登入') {
+            console.warn('Supabase 讀取欄位模板失敗，使用 localStorage:', error);
+        }
     }
     
     // 從 localStorage 讀取
@@ -283,11 +340,21 @@ async function saveFieldTemplates(templates) {
     try {
         const client = initSupabase();
         if (client) {
+            // 檢查是否有認證
+            const { data: { user } } = await client.auth.getUser();
+            if (!user) {
+                throw new Error('未登入');
+            }
+            
             // 先刪除舊配置
-            await client
+            const { error: deleteError } = await client
                 .from('admin_config')
                 .delete()
                 .eq('config_type', 'field_templates');
+            
+            if (deleteError && deleteError.code !== 'PGRST116') {
+                throw deleteError;
+            }
             
             // 插入新配置
             const configData = templates.map(template => ({
@@ -295,18 +362,23 @@ async function saveFieldTemplates(templates) {
                 config_data: template
             }));
             
-            const { error } = await client
+            const { error: insertError } = await client
                 .from('admin_config')
                 .insert(configData);
             
-            if (!error) {
+            if (!insertError) {
                 // 同時更新 localStorage 作為備份
                 localStorage.setItem(storageKey, JSON.stringify(templates));
                 return { success: true };
+            } else {
+                throw insertError;
             }
         }
     } catch (error) {
-        console.warn('Supabase 儲存欄位模板失敗，使用 localStorage:', error);
+        // 靜默處理錯誤，不顯示警告（因為這是正常的回退行為）
+        if (error.code !== 'PGRST301' && error.message !== '未登入') {
+            console.warn('Supabase 儲存欄位模板失敗，使用 localStorage:', error);
+        }
     }
     
     // 儲存到 localStorage
