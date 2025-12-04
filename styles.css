@@ -1027,6 +1027,11 @@ body {
     padding-right: 2.5rem;
 }
 
+.form-group-inline input {
+    flex: 1;
+    max-width: 500px;
+}
+
 .type-selector {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
