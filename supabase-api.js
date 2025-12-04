@@ -352,6 +352,142 @@ async function updateCommentInSupabase(commentId, updatedData) {
     }
 }
 
+// 用戶認證相關函數
+async function loginWithSupabase(username, password) {
+    try {
+        const client = initSupabase();
+        if (!client) {
+            return { success: false, message: 'Supabase 未設定' };
+        }
+
+        // 查詢用戶
+        const { data, error } = await client
+            .from('users')
+            .select('*')
+            .eq('username', username)
+            .single();
+
+        if (error) {
+            if (error.code === 'PGRST116') { // No rows found
+                return { success: false, message: '帳號或密碼錯誤' };
+            }
+            throw error;
+        }
+
+        // 驗證密碼（注意：實際應用應該使用加密比較）
+        if (data.password !== password) {
+            return { success: false, message: '帳號或密碼錯誤' };
+        }
+
+        // 登入成功，儲存用戶資訊到 localStorage
+        localStorage.setItem('currentUser', JSON.stringify({
+            id: data.id,
+            username: data.username,
+            name: data.name,
+            avatar: data.avatar
+        }));
+
+        return { success: true, user: data };
+    } catch (error) {
+        console.error('Supabase 登入失敗:', error);
+        return { success: false, message: '登入失敗，請稍後再試' };
+    }
+}
+
+async function registerWithSupabase(username, password, name, email) {
+    try {
+        const client = initSupabase();
+        if (!client) {
+            return { success: false, message: 'Supabase 未設定' };
+        }
+
+        // 檢查用戶名是否已存在
+        const { data: existingUser } = await client
+            .from('users')
+            .select('username')
+            .eq('username', username)
+            .single();
+
+        if (existingUser) {
+            return { success: false, message: '此帳號已被使用' };
+        }
+
+        // 檢查 email 是否已存在
+        const { data: existingEmail } = await client
+            .from('users')
+            .select('email')
+            .eq('email', email)
+            .single();
+
+        if (existingEmail) {
+            return { success: false, message: '此 Email 已被使用' };
+        }
+
+        // 建立新用戶（注意：實際應用應該加密密碼）
+        const { data, error } = await client
+            .from('users')
+            .insert([{
+                username: username,
+                password: password, // 實際應用應該使用 bcrypt 加密
+                name: name,
+                email: email,
+                avatar: null,
+                points: 0
+            }])
+            .select()
+            .single();
+
+        if (error) {
+            throw error;
+        }
+
+        // 自動登入
+        localStorage.setItem('currentUser', JSON.stringify({
+            id: data.id,
+            username: data.username,
+            name: data.name,
+            avatar: data.avatar
+        }));
+
+        return { success: true, user: data };
+    } catch (error) {
+        console.error('Supabase 註冊失敗:', error);
+        return { success: false, message: '註冊失敗，請稍後再試' };
+    }
+}
+
+async function updateUserInSupabase(userId, updates) {
+    try {
+        const client = initSupabase();
+        if (!client) {
+            return { success: false };
+        }
+
+        const dbData = {};
+        if (updates.name !== undefined) dbData.name = updates.name;
+        if (updates.email !== undefined) dbData.email = updates.email;
+        if (updates.avatar !== undefined) dbData.avatar = updates.avatar;
+        if (updates.points !== undefined) dbData.points = updates.points;
+        dbData.updated_at = new Date().toISOString();
+
+        const { data, error } = await client
+            .from('users')
+            .update(dbData)
+            .eq('id', userId)
+            .select()
+            .single();
+
+        if (error) {
+            throw error;
+        }
+
+        return { success: true, user: data };
+    } catch (error) {
+        console.error('更新用戶資訊失敗:', error);
+        return { success: false };
+    }
+}
+
 // 知識積分系統
 // 增加用戶知識積分（發文時自動加分）
 async function addUserPoints(authorName, points = 1) {
