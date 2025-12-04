@@ -366,6 +366,8 @@ async function deleteFormFieldsForContentType(contentType) {
 // 載入表單欄位配置
 async function loadFormFieldsConfig() {
     formFields = await getFormFieldsConfig();
+    // 過濾掉 'all' 類型的欄位
+    formFields = formFields.filter(f => f.contentType !== 'all');
     await renderFormFields();
 }
 
@@ -408,7 +410,7 @@ async function renderFormFields() {
     ).join('');
     
     container.innerHTML = contentTypes.map(type => {
-        const fields = formFields.filter(f => f.contentType === type && f.contentType !== 'all');
+        const fields = formFields.filter(f => f.contentType === type);
         const sortedFields = [...fields].sort((a, b) => a.order - b.order);
         
         // 如果之前是展開的，保持展開狀態
