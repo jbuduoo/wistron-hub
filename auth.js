@@ -11,14 +11,27 @@ const Auth = {
         return userStr ? JSON.parse(userStr) : null;
     },
 
-    // 登入
-    login(username, password) {
-        // 簡單的驗證（實際應用應該連接到後端）
+    // 登入（優先使用 Supabase，失敗時使用 localStorage）
+    async login(username, password) {
+        // 嘗試使用 Supabase
+        if (typeof initSupabase !== 'undefined') {
+            try {
+                const result = await loginWithSupabase(username, password);
+                if (result.success) {
+                    return result;
+                }
+            } catch (error) {
+                console.warn('Supabase 登入失敗，使用 localStorage:', error);
+            }
+        }
+
+        // 使用 localStorage 作為備援
         const users = JSON.parse(localStorage.getItem('users') || '[]');
         const user = users.find(u => u.username === username && u.password === password);
         
         if (user) {
             localStorage.setItem('currentUser', JSON.stringify({
+                id: user.id,
                 username: user.username,
                 name: user.name,
                 avatar: user.avatar || null
@@ -28,8 +41,21 @@ const Auth = {
         return { success: false, message: '帳號或密碼錯誤' };
     },
 
-    // 註冊
-    register(username, password, name, email) {
+    // 註冊（優先使用 Supabase，失敗時使用 localStorage）
+    async register(username, password, name, email) {
+        // 嘗試使用 Supabase
+        if (typeof initSupabase !== 'undefined') {
+            try {
+                const result = await registerWithSupabase(username, password, name, email);
+                if (result.success) {
+                    return result;
+                }
+            } catch (error) {
+                console.warn('Supabase 註冊失敗，使用 localStorage:', error);
+            }
+        }
+
+        // 使用 localStorage 作為備援
         const users = JSON.parse(localStorage.getItem('users') || '[]');
         
         // 檢查用戶名是否已存在
@@ -59,6 +85,7 @@ const Auth = {
 
         // 自動登入
         localStorage.setItem('currentUser', JSON.stringify({
+            id: newUser.id,
             username: newUser.username,
             name: newUser.name,
             avatar: newUser.avatar
@@ -74,10 +101,31 @@ const Auth = {
     },
 
     // 更新用戶資訊
-    updateUser(updates) {
+    async updateUser(updates) {
         const currentUser = this.getCurrentUser();
         if (!currentUser) return false;
 
+        // 嘗試使用 Supabase
+        if (typeof initSupabase !== 'undefined' && currentUser.id) {
+            try {
+                const result = await updateUserInSupabase(currentUser.id, updates);
+                if (result.success) {
+                    // 更新 localStorage 中的當前用戶資訊
+                    const updatedUser = { ...currentUser, ...updates };
+                    localStorage.setItem('currentUser', JSON.stringify({
+                        id: updatedUser.id,
+                        username: updatedUser.username,
+                        name: updatedUser.name,
+                        avatar: updatedUser.avatar
+                    }));
+                    return true;
+                }
+            } catch (error) {
+                console.warn('Supabase 更新失敗，使用 localStorage:', error);
+            }
+        }
+
+        // 使用 localStorage 作為備援
         const users = JSON.parse(localStorage.getItem('users') || '[]');
         const userIndex = users.findIndex(u => u.username === currentUser.username);
         
@@ -87,6 +135,7 @@ const Auth = {
             
             // 更新當前用戶資訊
             localStorage.setItem('currentUser', JSON.stringify({
+                id: users[userIndex].id,
                 username: users[userIndex].username,
                 name: users[userIndex].name,
                 avatar: users[userIndex].avatar

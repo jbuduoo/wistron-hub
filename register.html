@@ -191,9 +191,12 @@
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js?v=2"></script>
+    <script src="supabase-api.js?v=2"></script>
     <script src="auth.js"></script>
     <script>
-        document.getElementById('registerForm').addEventListener('submit', function(e) {
+        document.getElementById('registerForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
             const username = document.getElementById('username').value.trim();
@@ -228,7 +231,7 @@
             }
             
             // 註冊
-            const result = Auth.register(username, password, name, email);
+            const result = await Auth.register(username, password, name, email);
             
             if (result.success) {
                 successMessage.textContent = '註冊成功！正在跳轉...';
