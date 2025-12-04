@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>註冊 - 緯創分享平台</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .login-container {
+            min-height: calc(100vh - 80px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .login-card {
+            background: white;
+            border-radius: 12px;
+            padding: 3rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .login-card h2 {
+            font-size: 2rem;
+            color: #1e40af;
+            margin-bottom: 0.5rem;
+            text-align: center;
+        }
+
+        .login-card .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 2rem;
+        }
+
+        .login-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .form-group-login {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .form-group-login label {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group-login input {
+            padding: 0.75rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .form-group-login input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .login-btn {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+            border: none;
+            padding: 0.75rem;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 0.5rem;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+        }
+
+        .register-link {
+            text-align: center;
+            margin-top: 1.5rem;
+            color: #666;
+        }
+
+        .register-link a {
+            color: #3b82f6;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .register-link a:hover {
+            text-decoration: underline;
+        }
+
+        .error-message {
+            background: #fee;
+            color: #c33;
+            padding: 0.75rem;
+            border-radius: 8px;
+            border: 1px solid #fcc;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .success-message {
+            background: #efe;
+            color: #3c3;
+            padding: 0.75rem;
+            border-radius: 8px;
+            border: 1px solid #cfc;
+            display: none;
+        }
+
+        .success-message.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <!-- 頂部導航欄 -->
+    <header class="header">
+        <div class="header-left">
+            <div class="logo">
+                <h1>Wistron Share</h1>
+                <span class="logo-subtitle">緯創分享平台</span>
+            </div>
+        </div>
+        <div class="header-center">
+            <div class="search-box">
+                <input type="text" placeholder="搜尋最新消息、影片、文章、懸賞、作品、專案支援或內部專家..." id="searchInput">
+                <button class="search-btn" title="搜尋">🔍</button>
+            </div>
+        </div>
+        <div class="header-right">
+            <button class="login-btn-header" onclick="window.location.href='index.html'">返回首頁</button>
+        </div>
+    </header>
+
+    <div class="login-container">
+        <div class="login-card">
+            <h2>註冊</h2>
+            <p class="subtitle">加入緯創分享平台</p>
+            
+            <div class="error-message" id="errorMessage"></div>
+            <div class="success-message" id="successMessage"></div>
+            
+            <form class="login-form" id="registerForm">
+                <div class="form-group-login">
+                    <label for="username">帳號 <span class="required">*</span></label>
+                    <input type="text" id="username" name="username" required placeholder="輸入帳號（用於登入）">
+                </div>
+                
+                <div class="form-group-login">
+                    <label for="name">姓名 <span class="required">*</span></label>
+                    <input type="text" id="name" name="name" required placeholder="輸入您的姓名">
+                </div>
+                
+                <div class="form-group-login">
+                    <label for="email">Email <span class="required">*</span></label>
+                    <input type="email" id="email" name="email" required placeholder="輸入您的 Email">
+                </div>
+                
+                <div class="form-group-login">
+                    <label for="password">密碼 <span class="required">*</span></label>
+                    <input type="password" id="password" name="password" required placeholder="輸入密碼（至少6個字元）" minlength="6">
+                </div>
+                
+                <div class="form-group-login">
+                    <label for="confirmPassword">確認密碼 <span class="required">*</span></label>
+                    <input type="password" id="confirmPassword" name="confirmPassword" required placeholder="再次輸入密碼">
+                </div>
+                
+                <button type="submit" class="login-btn">註冊</button>
+            </form>
+            
+            <div class="register-link">
+                已有帳號？ <a href="login.html">立即登入</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="auth.js"></script>
+    <script>
+        document.getElementById('registerForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value.trim();
+            const name = document.getElementById('name').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const errorMessage = document.getElementById('errorMessage');
+            const successMessage = document.getElementById('successMessage');
+            
+            // 隱藏之前的訊息
+            errorMessage.classList.remove('show');
+            successMessage.classList.remove('show');
+            
+            // 驗證
+            if (!username || !name || !email || !password || !confirmPassword) {
+                errorMessage.textContent = '請填寫所有欄位';
+                errorMessage.classList.add('show');
+                return;
+            }
+            
+            if (password.length < 6) {
+                errorMessage.textContent = '密碼長度至少需要6個字元';
+                errorMessage.classList.add('show');
+                return;
+            }
+            
+            if (password !== confirmPassword) {
+                errorMessage.textContent = '兩次輸入的密碼不一致';
+                errorMessage.classList.add('show');
+                return;
+            }
+            
+            // 註冊
+            const result = Auth.register(username, password, name, email);
+            
+            if (result.success) {
+                successMessage.textContent = '註冊成功！正在跳轉...';
+                successMessage.classList.add('show');
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 1000);
+            } else {
+                errorMessage.textContent = result.message || '註冊失敗，請稍後再試';
+                errorMessage.classList.add('show');
+            }
+        });
+    </script>
+</body>
+</html>
+

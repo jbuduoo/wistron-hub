@@ -17,12 +17,36 @@
                 </a>
             </div>
         </div>
-        <div class="header-right">
-            <div class="user-points" id="userPoints">
-                <span class="points-icon">⭐</span>
-                <span class="points-label">知識積分：</span>
-                <span class="points-value" id="pointsValue">0</span>
+        <div class="header-right" id="headerRight">
+            <!-- 登入後顯示 -->
+            <div id="loggedInSection" style="display: none;">
+                <div class="user-avatar" id="userAvatar" onclick="showUserMenu()">
+                    <img src="" alt="用戶頭像" id="avatarImg" style="display: none;">
+                    <span id="avatarInitial">👤</span>
+                    <span class="online-dot"></span>
+                </div>
+                <div class="user-points" id="userPoints">
+                    <span class="points-icon">⭐</span>
+                    <span class="points-label">知識積分：</span>
+                    <span class="points-value" id="pointsValue">0</span>
+                </div>
             </div>
+        </div>
+        
+        <!-- 用戶選單 -->
+        <div class="user-menu" id="userMenu" style="display: none;">
+            <div class="user-menu-header">
+                <div class="user-menu-avatar" id="menuAvatar">
+                    <span id="menuAvatarInitial">👤</span>
+                </div>
+                <div class="user-menu-info">
+                    <div class="user-menu-name" id="menuUserName">用戶名稱</div>
+                    <div class="user-menu-username" id="menuUserUsername">@username</div>
+                </div>
+            </div>
+            <div class="user-menu-divider"></div>
+            <a href="#" class="user-menu-item" onclick="window.location.href='index.html'">🏠 返回首頁</a>
+            <a href="#" class="user-menu-item" onclick="logout()">🚪 登出</a>
         </div>
     </header>
 

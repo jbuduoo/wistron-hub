@@ -138,6 +138,140 @@ body {
     background: #f59e0b;
 }
 
+.login-btn-header {
+    background: #60a5fa;
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-size: 1rem;
+}
+
+.login-btn-header:hover {
+    background: #3b82f6;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+}
+
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    position: relative;
+    margin-right: 1rem;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    transition: all 0.3s;
+}
+
+.user-avatar:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.05);
+}
+
+.user-avatar img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.user-avatar #avatarInitial {
+    font-size: 1.2rem;
+    color: white;
+}
+
+.online-dot {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 12px;
+    height: 12px;
+    background: #10b981;
+    border: 2px solid #2563eb;
+    border-radius: 50%;
+}
+
+.user-menu {
+    position: absolute;
+    top: 70px;
+    right: 2rem;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    min-width: 250px;
+    z-index: 1001;
+    overflow: hidden;
+}
+
+.user-menu-header {
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    color: white;
+}
+
+.user-menu-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.user-menu-info {
+    flex: 1;
+}
+
+.user-menu-name {
+    font-weight: 600;
+    font-size: 1rem;
+    margin-bottom: 0.25rem;
+}
+
+.user-menu-username {
+    font-size: 0.85rem;
+    opacity: 0.9;
+}
+
+.user-menu-divider {
+    height: 1px;
+    background: #e5e7eb;
+    margin: 0.5rem 0;
+}
+
+.user-menu-item {
+    display: block;
+    padding: 0.75rem 1.5rem;
+    color: #333;
+    text-decoration: none;
+    transition: background 0.2s;
+    cursor: pointer;
+}
+
+.user-menu-item:hover {
+    background: #f3f4f6;
+}
+
+#loggedInSection {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
 /* 容器 */
 .container {
     display: flex;
