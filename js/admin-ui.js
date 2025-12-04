@@ -723,50 +723,55 @@ function closeTemplateSelector() {
 }
 
 // 選擇模板並填入表單
-function selectTemplate(templateId) {
+async function selectTemplate(templateId) {
     const template = fieldTemplates.find(t => t.id === templateId);
     if (!template) return;
     
     // 關閉模板選擇器
     closeTemplateSelector();
     
-    // 如果是在表單欄位管理頁面選擇模板，則打開新增欄位 modal
+    // 如果是在表單欄位管理頁面選擇模板，則直接新增欄位
     if (currentContentTypeForTemplate) {
-        editingFieldId = null;
-        document.getElementById('fieldModalTitle').textContent = '新增表單欄位';
-        document.getElementById('fieldForm').reset();
-        document.getElementById('fieldId').value = '';
-        document.getElementById('fieldContentType').value = currentContentTypeForTemplate;
+        const contentType = currentContentTypeForTemplate;
         
-        // 填入模板資料
-        document.getElementById('fieldKey').value = template.fieldKey;
-        document.getElementById('fieldType').value = template.fieldType;
-        document.getElementById('fieldLabel').value = template.label;
-        document.getElementById('fieldPlaceholder').value = template.placeholder || '';
-        document.getElementById('fieldRequired').checked = template.required || false;
-        document.getElementById('fieldEnabled').checked = true;
-        document.getElementById('fieldOrder').value = 0;
+        // 檢查是否已存在相同 fieldKey 的欄位
+        const existingField = formFields.find(f => 
+            f.contentType === contentType && f.fieldKey === template.fieldKey
+        );
         
-        // 處理選項
-        if (template.options && template.options.length > 0) {
-            const optionsText = template.options.map(opt => 
-                typeof opt === 'string' ? opt : `${opt.value}|${opt.label}`
-            ).join('\n');
-            document.getElementById('fieldOptions').value = optionsText;
-            document.getElementById('fieldOptionsGroup').style.display = 'block';
-        } else {
-            document.getElementById('fieldOptions').value = '';
-            document.getElementById('fieldOptionsGroup').style.display = 
-                template.fieldType === 'select' ? 'block' : 'none';
+        if (existingField) {
+            showAlert(`欄位「${template.label}」已存在於此內容類型中`, 'error');
+            currentContentTypeForTemplate = null;
+            return;
         }
         
-        // 打開新增欄位 modal
-        document.getElementById('fieldModal').classList.add('active');
+        // 創建新欄位
+        const newField = {
+            id: 'f' + Date.now(),
+            contentType: contentType,
+            fieldKey: template.fieldKey,
+            fieldType: template.fieldType,
+            label: template.label,
+            placeholder: template.placeholder || '',
+            required: template.required || false,
+            enabled: true,
+            order: formFields.filter(f => f.contentType === contentType).length,
+            options: template.options || undefined
+        };
+        
+        // 新增到陣列
+        formFields.push(newField);
+        
+        // 儲存到資料庫/localStorage
+        await saveFormFieldsConfig(formFields);
+        
+        // 重新渲染表單欄位列表
+        renderFormFields();
         
         // 重置變數
         currentContentTypeForTemplate = null;
         
-        showAlert('模板已套用，請確認欄位資訊', 'success');
+        showAlert(`欄位「${template.label}」已成功新增`, 'success');
     } else {
         // 原本的功能：在欄位表單中選擇模板
         document.getElementById('fieldKey').value = template.fieldKey;
