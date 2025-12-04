@@ -352,8 +352,30 @@ async function renderFormFields() {
 
 function toggleContentTypeFields(type) {
     const fieldsDiv = document.getElementById(`fields_${type}`);
-    if (fieldsDiv) {
-        fieldsDiv.style.display = fieldsDiv.style.display === 'none' ? 'block' : 'none';
+    if (!fieldsDiv) return;
+    
+    // 检查当前项目是否已打开（使用 getComputedStyle 更可靠）
+    const computedStyle = window.getComputedStyle(fieldsDiv);
+    const isCurrentlyOpen = computedStyle.display !== 'none';
+    
+    // 获取所有内容类型的字段容器
+    const contentTypes = ['all', 'news', 'video', 'article', 'suggestion', 'project', 'job', 'expert'];
+    
+    // 如果当前项目是关闭的，先关闭所有其他项目
+    if (!isCurrentlyOpen) {
+        contentTypes.forEach(ct => {
+            if (ct !== type) {
+                const otherFieldsDiv = document.getElementById(`fields_${ct}`);
+                if (otherFieldsDiv) {
+                    otherFieldsDiv.style.display = 'none';
+                }
+            }
+        });
+        // 然后打开当前项目
+        fieldsDiv.style.display = 'block';
+    } else {
+        // 如果当前项目是打开的，则关闭它
+        fieldsDiv.style.display = 'none';
     }
 }
 
