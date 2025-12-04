@@ -211,7 +211,10 @@ async function getFieldTemplates() {
                 .order('name', { ascending: true });
             
             if (!error && data && data.length > 0) {
-                return data.map(item => item.config_data);
+                const templates = data.map(item => item.config_data);
+                // 同時更新 localStorage 作為備份
+                localStorage.setItem(storageKey, JSON.stringify(templates));
+                return templates;
             }
         } catch (error) {
             console.warn('Supabase 讀取欄位模板失敗，使用 localStorage:', error);
@@ -221,11 +224,27 @@ async function getFieldTemplates() {
     // 從 localStorage 讀取
     const stored = localStorage.getItem(storageKey);
     if (stored) {
-        return JSON.parse(stored);
+        try {
+            const parsed = JSON.parse(stored);
+            // 確保是數組且不為空
+            if (Array.isArray(parsed) && parsed.length > 0) {
+                return parsed;
+            } else {
+                // 如果 localStorage 中有空數組，使用預設模板
+                console.log('localStorage 中的模板為空，使用預設模板');
+                const defaults = getDefaultFieldTemplates();
+                localStorage.setItem(storageKey, JSON.stringify(defaults));
+                return defaults;
+            }
+        } catch (error) {
+            console.warn('解析 localStorage 模板失敗:', error);
+        }
     }
     
-    // 返回預設模板
-    return getDefaultFieldTemplates();
+    // 返回預設模板並儲存到 localStorage
+    const defaults = getDefaultFieldTemplates();
+    localStorage.setItem(storageKey, JSON.stringify(defaults));
+    return defaults;
 }
 
 function getDefaultFieldTemplates() {

@@ -497,10 +497,27 @@ async function loadFieldTemplates() {
     try {
         fieldTemplates = await getFieldTemplates();
         console.log('載入的模板數量:', fieldTemplates.length);
+        console.log('模板數據:', fieldTemplates);
+        
+        // 如果模板為空，強制初始化預設模板
+        if (!fieldTemplates || fieldTemplates.length === 0) {
+            console.log('模板為空，初始化預設模板');
+            fieldTemplates = getDefaultFieldTemplates();
+            await saveFieldTemplates(fieldTemplates);
+        }
+        
         renderTemplatesList();
     } catch (error) {
         console.error('載入欄位模板失敗:', error);
-        showAlert('載入模板失敗', 'error');
+        // 如果載入失敗，使用預設模板
+        try {
+            fieldTemplates = getDefaultFieldTemplates();
+            await saveFieldTemplates(fieldTemplates);
+            renderTemplatesList();
+        } catch (fallbackError) {
+            console.error('初始化預設模板失敗:', fallbackError);
+            showAlert('載入模板失敗', 'error');
+        }
     }
 }
 
