@@ -221,9 +221,20 @@ function editSidebarItem(id) {
 async function deleteSidebarItem(id) {
     if (!confirm('確定要刪除此項目嗎？')) return;
     
+    // 找到要刪除的項目，獲取其 filter 值
+    const itemToDelete = sidebarItems.find(item => item.id === id);
+    const filterToDelete = itemToDelete ? itemToDelete.filter : null;
+    
+    // 刪除側邊欄項目
     sidebarItems = sidebarItems.filter(item => item.id !== id);
     await saveSidebarConfig(sidebarItems);
     renderSidebarList();
+    
+    // 刪除對應的表單欄位配置
+    if (filterToDelete) {
+        await deleteFormFieldsForContentType(filterToDelete);
+    }
+    
     showAlert('項目已刪除', 'success');
 }
 
@@ -266,12 +277,88 @@ async function handleSidebarSubmit(e) {
     } else {
         // 新增
         sidebarItems.push(item);
+        
+        // 檢查並創建對應的表單欄位配置
+        await createFormFieldsForContentType(item.filter);
     }
     
     await saveSidebarConfig(sidebarItems);
     renderSidebarList();
     closeSidebarModal();
     showAlert('儲存成功', 'success');
+}
+
+// 為新的內容類型創建表單欄位配置（從"所有類型"複製基礎欄位）
+async function createFormFieldsForContentType(contentType) {
+    // 跳過 'all' 類型，因為它是基礎類型
+    if (contentType === 'all') return;
+    
+    // 檢查是否已經存在該內容類型的欄位
+    const existingFields = formFields.filter(f => f.contentType === contentType);
+    if (existingFields.length > 0) {
+        // 已經存在，不需要創建
+        return;
+    }
+    
+    // 獲取"所有類型"的基礎欄位（排除 contentType 選擇欄位）
+    const baseFields = formFields.filter(f => 
+        f.contentType === 'all' && f.fieldKey !== 'contentType'
+    );
+    
+    if (baseFields.length === 0) {
+        // 如果沒有基礎欄位，從預設配置獲取
+        const defaultFields = getDefaultFormFieldsConfig();
+        const defaultBaseFields = defaultFields.filter(f => 
+            f.contentType === 'all' && f.fieldKey !== 'contentType'
+        );
+        
+        // 複製基礎欄位並設置新的 contentType
+        const newFields = defaultBaseFields.map(field => ({
+            ...field,
+            id: 'f' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+            contentType: contentType,
+            order: field.order
+        }));
+        
+        formFields.push(...newFields);
+    } else {
+        // 複製基礎欄位並設置新的 contentType
+        const newFields = baseFields.map(field => ({
+            ...field,
+            id: 'f' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+            contentType: contentType,
+            order: field.order
+        }));
+        
+        formFields.push(...newFields);
+    }
+    
+    // 儲存更新後的表單欄位配置
+    await saveFormFieldsConfig(formFields);
+    
+    // 如果當前在表單欄位管理標籤頁，重新渲染
+    const fieldsTab = document.getElementById('fieldsTab');
+    if (fieldsTab && fieldsTab.classList.contains('active')) {
+        await renderFormFields();
+    }
+}
+
+// 刪除指定內容類型的表單欄位配置
+async function deleteFormFieldsForContentType(contentType) {
+    // 跳過 'all' 類型，因為它是基礎類型，不應該被刪除
+    if (contentType === 'all') return;
+    
+    // 刪除該內容類型的所有欄位
+    formFields = formFields.filter(f => f.contentType !== contentType);
+    
+    // 儲存更新後的表單欄位配置
+    await saveFormFieldsConfig(formFields);
+    
+    // 如果當前在表單欄位管理標籤頁，重新渲染
+    const fieldsTab = document.getElementById('fieldsTab');
+    if (fieldsTab && fieldsTab.classList.contains('active')) {
+        await renderFormFields();
+    }
 }
 
 // 載入表單欄位配置
