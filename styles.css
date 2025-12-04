@@ -1029,7 +1029,7 @@ body {
 
 .form-group-inline input {
     flex: 1;
-    max-width: 500px;
+    max-width: none;
 }
 
 .type-selector {
