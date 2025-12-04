@@ -783,8 +783,19 @@ function renderTemplatesList() {
         return;
     }
     
-    list.innerHTML = fieldTemplates.map(template => `
-        <div class="field-item">
+    // 確保每個模板都有 order 欄位，如果沒有則按索引賦值
+    fieldTemplates.forEach((template, index) => {
+        if (template.order === undefined || template.order === null) {
+            template.order = index + 1;
+        }
+    });
+    
+    // 按 order 排序
+    const sortedTemplates = [...fieldTemplates].sort((a, b) => (a.order || 0) - (b.order || 0));
+    
+    list.innerHTML = sortedTemplates.map(template => `
+        <div class="field-item" data-id="${template.id}" data-type="template">
+            <span class="drag-handle">☰</span>
             <div class="field-info">
                 <div class="field-label">
                     ${template.name}
@@ -792,12 +803,100 @@ function renderTemplatesList() {
                 </div>
                 <div class="field-key">${template.fieldKey} (${template.fieldType})</div>
             </div>
-            <div class="item-actions">
-                <button class="btn-small" onclick="editTemplate('${template.id}')">編輯</button>
-                <button class="btn-small btn-danger" onclick="deleteTemplate('${template.id}')">刪除</button>
+            <div class="item-actions" onclick="event.stopPropagation();">
+                <button class="btn-small" onclick="event.stopPropagation(); editTemplate('${template.id}')">編輯</button>
+                <button class="btn-small btn-danger" onclick="event.stopPropagation(); deleteTemplate('${template.id}')">刪除</button>
             </div>
         </div>
     `).join('');
+    
+    // 初始化模板拖拽排序
+    initTemplateDragAndDrop();
+}
+
+// 模板拖拽排序
+let draggedTemplateElement = null; // 全局變數，用於追蹤正在拖拽的模板
+
+function initTemplateDragAndDrop() {
+    const list = document.getElementById('templatesList');
+    if (!list) return;
+    
+    const templateItems = list.querySelectorAll('.field-item[data-type="template"]');
+    
+    templateItems.forEach(item => {
+        item.draggable = true;
+        
+        item.addEventListener('dragstart', function(e) {
+            draggedTemplateElement = this;
+            this.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+        });
+        
+        item.addEventListener('dragend', function() {
+            this.classList.remove('dragging');
+            // 更新順序
+            if (draggedTemplateElement) {
+                updateTemplateOrder();
+            }
+            draggedTemplateElement = null;
+        });
+        
+        item.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            
+            if (!draggedTemplateElement) return;
+            
+            if (this !== draggedTemplateElement) {
+                const afterElement = getDragAfterTemplateElement(list, e.clientY);
+                if (afterElement == null) {
+                    list.appendChild(draggedTemplateElement);
+                } else {
+                    list.insertBefore(draggedTemplateElement, afterElement);
+                }
+            }
+        });
+        
+        item.addEventListener('drop', function(e) {
+            e.preventDefault();
+        });
+    });
+}
+
+function getDragAfterTemplateElement(container, y) {
+    const draggableElements = [...container.querySelectorAll('.field-item[data-type="template"]:not(.dragging)')];
+    
+    if (draggableElements.length === 0) return null;
+    
+    return draggableElements.reduce((closest, child) => {
+        const box = child.getBoundingClientRect();
+        const offset = y - box.top - box.height / 2;
+        
+        if (offset < 0 && offset > closest.offset) {
+            return { offset: offset, element: child };
+        } else {
+            return closest;
+        }
+    }, { offset: Number.NEGATIVE_INFINITY }).element;
+}
+
+// 更新模板順序
+async function updateTemplateOrder() {
+    const list = document.getElementById('templatesList');
+    if (!list) return;
+    
+    const templateItems = list.querySelectorAll('.field-item[data-type="template"]');
+    
+    templateItems.forEach((item, index) => {
+        const id = item.getAttribute('data-id');
+        const template = fieldTemplates.find(t => t.id === id);
+        if (template) {
+            template.order = index + 1;
+        }
+    });
+    
+    await saveFieldTemplates(fieldTemplates);
+    showAlert('模板順序已更新', 'success');
 }
 
 // 從下拉選單選擇模板並新增欄位
@@ -965,10 +1064,15 @@ async function handleTemplateSubmit(e) {
         // 更新
         const index = fieldTemplates.findIndex(t => t.id === editingTemplateId);
         if (index !== -1) {
+            // 保留原有的 order
+            template.order = fieldTemplates[index].order || fieldTemplates.length + 1;
             fieldTemplates[index] = template;
         }
     } else {
-        // 新增
+        // 新增 - 設置 order 為最後一個
+        template.order = fieldTemplates.length > 0 
+            ? Math.max(...fieldTemplates.map(t => t.order || 0)) + 1 
+            : 1;
         fieldTemplates.push(template);
     }
     
