@@ -194,22 +194,6 @@
         document.addEventListener('DOMContentLoaded', function() {
             updateHeaderForAuth();
         });
-        
-        // 確保登入按鈕在頁面載入時正確顯示
-        window.addEventListener('load', function() {
-            const loginBtn = document.getElementById('loginBtn');
-            const loggedInSection = document.getElementById('loggedInSection');
-            
-            if (!Auth.isLoggedIn()) {
-                // 未登入：顯示登入按鈕，隱藏登入後的區塊
-                if (loginBtn) loginBtn.style.display = 'block';
-                if (loggedInSection) loggedInSection.style.display = 'none';
-            } else {
-                // 已登入：隱藏登入按鈕，顯示登入後的區塊
-                if (loginBtn) loginBtn.style.display = 'none';
-                if (loggedInSection) loggedInSection.style.display = 'flex';
-            }
-        });
     </script>
 </body>
 </html>
