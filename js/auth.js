@@ -186,7 +186,24 @@ const Auth = {
         }
 
         // 使用 localStorage 作為備援
-        const users = JSON.parse(localStorage.getItem('users') || '[]');
+        let users = [];
+        try {
+            const usersStr = localStorage.getItem('users');
+            if (usersStr) {
+                users = JSON.parse(usersStr);
+            }
+            // 確保 users 是數組
+            if (!Array.isArray(users)) {
+                console.warn('localStorage users 不是數組，重置為空數組');
+                users = [];
+                localStorage.setItem('users', '[]');
+            }
+        } catch (error) {
+            console.warn('解析 localStorage users 失敗:', error);
+            users = [];
+            localStorage.setItem('users', '[]');
+        }
+        
         const userIndex = users.findIndex(u => u.username === currentUser.username);
         
         if (userIndex !== -1) {
