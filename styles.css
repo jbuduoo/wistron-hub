@@ -1472,6 +1472,8 @@ body {
     justify-content: flex-end;
     gap: 0.5rem;
     margin-bottom: 1.5rem;
+    width: 100%;
+    margin-left: auto;
 }
 
 .meta-action-btn {
