@@ -408,7 +408,7 @@ async function renderFormFields() {
     ).join('');
     
     container.innerHTML = contentTypes.map(type => {
-        const fields = formFields.filter(f => f.contentType === type);
+        const fields = formFields.filter(f => f.contentType === type && f.contentType !== 'all');
         const sortedFields = [...fields].sort((a, b) => a.order - b.order);
         
         // 如果之前是展開的，保持展開狀態
