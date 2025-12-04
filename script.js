@@ -350,7 +350,6 @@ async function loadContent(filter = 'all', sort = 'newest') {
                             <span>👁️ ${content.views || 0}</span>
                             <span>👍 ${content.likes || 0}</span>
                         </div>
-                        <span class="news-badge ${isExpert ? 'expert-badge' : ''}">${getTypeName(content.type)}</span>
                     </div>
                 </div>
             </div>
