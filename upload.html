@@ -71,8 +71,8 @@
                             <label class="type-option">
                                 <input type="radio" name="contentType" value="job" required>
                                 <div class="type-card">
-                                    <span class="type-icon">💼</span>
-                                    <span>職缺分享</span>
+                                    <span class="type-icon">🤝</span>
+                                    <span>專案支援及技能媒合</span>
                                 </div>
                             </label>
                             <label class="type-option">
@@ -125,49 +125,49 @@
                         <small class="form-hint">請輸入您的 GitHub 專案連結</small>
                     </div>
 
-                    <!-- 職缺資訊（職缺分享專用） -->
+                    <!-- 專案支援資訊（專案支援及技能媒合專用） -->
                     <div class="form-group" id="jobInfoGroup" style="display: none;">
                         <div class="job-info-notice">
-                            <span class="notice-icon">👤</span>
-                            <span>此功能僅限人資部門使用</span>
+                            <span class="notice-icon">💡</span>
+                            <span>分享您的專案需求，尋找合適的支援人才。例如：「我的專案缺一個會寫前端的人，誰有空支援？」</span>
                         </div>
                         
                         <div class="form-row">
                             <div class="form-group-half">
-                                <label for="jobLocation">工作地點 <span class="required">*</span></label>
-                                <input type="text" id="jobLocation" name="jobLocation" placeholder="例如：台北、新竹、台中、高雄...">
+                                <label for="jobLocation">專案地點/遠端 <span class="required">*</span></label>
+                                <input type="text" id="jobLocation" name="jobLocation" placeholder="例如：台北、新竹、遠端、駐點...">
                             </div>
                             <div class="form-group-half">
-                                <label for="jobType">職務類型 <span class="required">*</span></label>
+                                <label for="jobType">支援類型 <span class="required">*</span></label>
                                 <select id="jobType" name="jobType">
                                     <option value="">請選擇</option>
-                                    <option value="全職">全職</option>
-                                    <option value="兼職">兼職</option>
-                                    <option value="約聘">約聘</option>
-                                    <option value="駐點">駐點</option>
+                                    <option value="短期支援">短期支援</option>
+                                    <option value="長期支援">長期支援</option>
+                                    <option value="顧問諮詢">顧問諮詢</option>
+                                    <option value="技能分享">技能分享</option>
                                 </select>
                             </div>
                         </div>
 
                         <div class="form-row">
                             <div class="form-group-half">
-                                <label for="jobDepartment">部門 <span class="required">*</span></label>
-                                <input type="text" id="jobDepartment" name="jobDepartment" placeholder="例如：技術部、業務部、行銷部...">
+                                <label for="jobDepartment">專案/部門 <span class="required">*</span></label>
+                                <input type="text" id="jobDepartment" name="jobDepartment" placeholder="例如：AI 專案、技術部、行銷專案...">
                             </div>
                             <div class="form-group-half">
-                                <label for="jobSalary">薪資範圍</label>
-                                <input type="text" id="jobSalary" name="jobSalary" placeholder="例如：40,000-60,000 或 面議">
+                                <label for="jobSalary">時間需求/報酬</label>
+                                <input type="text" id="jobSalary" name="jobSalary" placeholder="例如：每週 10 小時、專案期間、或 面議">
                             </div>
                         </div>
 
                         <div class="form-group">
-                            <label for="jobRequirements">職務要求 <span class="required">*</span></label>
-                            <textarea id="jobRequirements" name="jobRequirements" rows="4" placeholder="請輸入職務要求，例如：學歷、經驗、技能等..."></textarea>
+                            <label for="jobRequirements">需要的技能/專長 <span class="required">*</span></label>
+                            <textarea id="jobRequirements" name="jobRequirements" rows="4" placeholder="請描述需要的技能，例如：React、Python、UI/UX 設計、專案管理等..."></textarea>
                         </div>
 
                         <div class="form-group">
                             <label for="jobContact">聯絡方式 <span class="required">*</span></label>
-                            <input type="text" id="jobContact" name="jobContact" placeholder="例如：hr@wistron.com 或 分機 1234">
+                            <input type="text" id="jobContact" name="jobContact" placeholder="例如：your.email@wistron.com 或 分機 1234">
                         </div>
                     </div>
 
@@ -272,10 +272,10 @@
                 return;
             }
 
-            // 驗證職缺分享必須填寫所有必填欄位
+            // 驗證專案支援及技能媒合必須填寫所有必填欄位
             if (contentType === 'job') {
                 if (!jobLocation || !jobDepartment || !jobRequirements || !jobContact) {
-                    alert('職缺分享必須填寫所有必填欄位！');
+                    alert('專案支援及技能媒合必須填寫所有必填欄位！');
                     return;
                 }
             }

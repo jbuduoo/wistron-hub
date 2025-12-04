@@ -392,7 +392,7 @@ function getTypeIcon(type) {
         article: '📄',
         suggestion: '💭',
         project: '💻',
-        job: '💼',
+        job: '🤝',
         expert: '🤝'
     };
     return icons[type] || '📄';
@@ -406,7 +406,7 @@ function getTypeName(type) {
         article: '文章分享',
         suggestion: '建議提案',
         project: '作品分享',
-        job: '職缺分享',
+        job: '專案支援及技能媒合',
         expert: '找內部專家'
     };
     return names[type] || '其他';
@@ -548,7 +548,7 @@ function setupSidebarFilter() {
                 article: '文章分享',
                 suggestion: '建議提案',
                 project: '作品分享',
-                job: '職缺分享',
+                job: '專案支援及技能媒合',
                 expert: '找內部專家'
             };
             contentTitle.textContent = titles[filter] || '全部內容';

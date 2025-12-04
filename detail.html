@@ -238,18 +238,18 @@
             if (content.type === 'job') {
                 const descriptionDiv = document.querySelector('.description');
                 let jobInfoHTML = '<div class="job-details">';
-                jobInfoHTML += '<div class="job-detail-item"><span class="detail-label">📍 工作地點：</span><span class="detail-value">' + content.jobLocation + '</span></div>';
+                jobInfoHTML += '<div class="job-detail-item"><span class="detail-label">📍 專案地點/遠端：</span><span class="detail-value">' + content.jobLocation + '</span></div>';
                 if (content.jobDepartment) {
-                    jobInfoHTML += '<div class="job-detail-item"><span class="detail-label">🏢 部門：</span><span class="detail-value">' + content.jobDepartment + '</span></div>';
+                    jobInfoHTML += '<div class="job-detail-item"><span class="detail-label">🏢 專案/部門：</span><span class="detail-value">' + content.jobDepartment + '</span></div>';
                 }
                 if (content.jobType) {
-                    jobInfoHTML += '<div class="job-detail-item"><span class="detail-label">⏰ 職務類型：</span><span class="detail-value">' + content.jobType + '</span></div>';
+                    jobInfoHTML += '<div class="job-detail-item"><span class="detail-label">⏰ 支援類型：</span><span class="detail-value">' + content.jobType + '</span></div>';
                 }
                 if (content.jobSalary) {
-                    jobInfoHTML += '<div class="job-detail-item"><span class="detail-label">💰 薪資範圍：</span><span class="detail-value">' + content.jobSalary + '</span></div>';
+                    jobInfoHTML += '<div class="job-detail-item"><span class="detail-label">⏱️ 時間需求/報酬：</span><span class="detail-value">' + content.jobSalary + '</span></div>';
                 }
                 if (content.jobRequirements) {
-                    jobInfoHTML += '<div class="job-detail-item job-requirements"><span class="detail-label">📋 職務要求：</span><div class="detail-value">' + content.jobRequirements.replace(/\n/g, '<br>') + '</div></div>';
+                    jobInfoHTML += '<div class="job-detail-item job-requirements"><span class="detail-label">🛠️ 需要的技能/專長：</span><div class="detail-value">' + content.jobRequirements.replace(/\n/g, '<br>') + '</div></div>';
                 }
                 if (content.jobContact) {
                     jobInfoHTML += '<div class="job-detail-item job-contact"><span class="detail-label">📞 聯絡方式：</span><span class="detail-value">' + content.jobContact + '</span></div>';
