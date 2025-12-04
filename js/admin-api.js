@@ -199,18 +199,34 @@ async function saveFormFieldsConfig(fields) {
 
 // 檢查管理員權限
 function checkAdminAccess() {
+    console.log('檢查管理員權限...');
+    
+    if (!Auth || typeof Auth.isLoggedIn === 'undefined') {
+        console.error('Auth 物件未載入！');
+        alert('系統錯誤：認證模組未載入，請重新整理頁面。');
+        return false;
+    }
+    
     if (!Auth.isLoggedIn()) {
+        console.log('用戶未登入');
         alert('請先登入！');
         window.location.href = 'login.html';
         return false;
     }
     
+    const currentUser = Auth.getCurrentUser();
+    console.log('當前用戶:', currentUser);
+    
     if (!Auth.isAdmin()) {
-        alert('您沒有權限訪問此頁面！');
+        console.log('用戶不是管理員');
+        console.log('用戶名:', currentUser?.username);
+        console.log('用戶角色:', currentUser?.role);
+        alert('您沒有權限訪問此頁面！\n\n請確認您使用的是管理員帳號（admin/1234）');
         window.location.href = 'index.html';
         return false;
     }
     
+    console.log('管理員權限驗證通過');
     return true;
 }
 

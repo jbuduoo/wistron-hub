@@ -165,7 +165,7 @@
 
     <script src="js/auth.js"></script>
     <script>
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
             const username = document.getElementById('username').value.trim();
@@ -178,13 +178,20 @@
                 return;
             }
             
-            const result = await Auth.login(username, password);
-            
-            if (result.success) {
-                // 登入成功，跳轉到首頁
-                window.location.href = 'index.html';
-            } else {
-                errorMessage.textContent = result.message || '登入失敗，請檢查帳號密碼';
+            try {
+                const result = await Auth.login(username, password);
+                
+                if (result.success) {
+                    console.log('登入成功，用戶資訊:', result.user);
+                    // 登入成功，跳轉到首頁
+                    window.location.href = 'index.html';
+                } else {
+                    errorMessage.textContent = result.message || '登入失敗，請檢查帳號密碼';
+                    errorMessage.classList.add('show');
+                }
+            } catch (error) {
+                console.error('登入錯誤:', error);
+                errorMessage.textContent = '登入時發生錯誤，請稍後再試';
                 errorMessage.classList.add('show');
             }
         });
