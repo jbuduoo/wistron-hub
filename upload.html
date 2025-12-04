@@ -36,58 +36,17 @@
                 <form id="uploadForm" class="upload-form">
                     <!-- 內容類型選擇 -->
                     <div class="form-group">
-                        <label>內容類型 <span class="required">*</span></label>
-                        <div class="type-selector">
-                            <label class="type-option">
-                                <input type="radio" name="contentType" value="news" required>
-                                <div class="type-card">
-                                    <span class="type-icon">📢</span>
-                                    <span>最新消息</span>
-                                </div>
-                            </label>
-                            <label class="type-option">
-                                <input type="radio" name="contentType" value="video" required>
-                                <div class="type-card">
-                                    <span class="type-icon">🎬</span>
-                                    <span>影片分享</span>
-                                </div>
-                            </label>
-                            <label class="type-option">
-                                <input type="radio" name="contentType" value="article" required>
-                                <div class="type-card">
-                                    <span class="type-icon">📄</span>
-                                    <span>文章分享</span>
-                                </div>
-                            </label>
-                            <label class="type-option">
-                                <input type="radio" name="contentType" value="suggestion" required>
-                                <div class="type-card">
-                                    <span class="type-icon">💰</span>
-                                    <span>懸賞區</span>
-                                </div>
-                            </label>
-                            <label class="type-option">
-                                <input type="radio" name="contentType" value="project" required>
-                                <div class="type-card">
-                                    <span class="type-icon">💻</span>
-                                    <span>作品分享</span>
-                                </div>
-                            </label>
-                            <label class="type-option">
-                                <input type="radio" name="contentType" value="job" required>
-                                <div class="type-card">
-                                    <span class="type-icon">🤝</span>
-                                    <span>專案支援及技能媒合</span>
-                                </div>
-                            </label>
-                            <label class="type-option">
-                                <input type="radio" name="contentType" value="expert" required>
-                                <div class="type-card">
-                                    <span class="type-icon">🤝</span>
-                                    <span>找內部專家</span>
-                                </div>
-                            </label>
-                        </div>
+                        <label for="contentType">內容類型 <span class="required">*</span></label>
+                        <select id="contentType" name="contentType" required>
+                            <option value="">請選擇內容類型</option>
+                            <option value="news">📢 最新消息</option>
+                            <option value="video">🎬 影片分享</option>
+                            <option value="article">📄 文章分享</option>
+                            <option value="suggestion">💰 懸賞區</option>
+                            <option value="project">💻 作品分享</option>
+                            <option value="job">🤝 專案支援及技能媒合</option>
+                            <option value="expert">🤝 找內部專家</option>
+                        </select>
                     </div>
 
                     <!-- 標題 -->
@@ -255,6 +214,42 @@
                 authorInput.value = currentAuthor;
                 updatePointsDisplay();
             }
+        }
+
+        // 監聽內容類型變化，顯示/隱藏對應的表單欄位
+        const contentTypeSelect = document.getElementById('contentType');
+        const newsTimeGroup = document.getElementById('newsTimeGroup');
+        const githubLinkGroup = document.getElementById('githubLinkGroup');
+        const jobInfoGroup = document.getElementById('jobInfoGroup');
+        const fileUploadGroup = document.getElementById('fileUploadGroup');
+
+        function toggleFormFields() {
+            const contentType = contentTypeSelect.value;
+            
+            // 重置所有欄位顯示狀態
+            if (newsTimeGroup) newsTimeGroup.style.display = 'none';
+            if (githubLinkGroup) githubLinkGroup.style.display = 'none';
+            if (jobInfoGroup) jobInfoGroup.style.display = 'none';
+            
+            // 根據選擇的類型顯示對應欄位
+            if (contentType === 'news') {
+                if (newsTimeGroup) newsTimeGroup.style.display = 'block';
+            } else if (contentType === 'project') {
+                if (githubLinkGroup) githubLinkGroup.style.display = 'block';
+            } else if (contentType === 'job') {
+                if (jobInfoGroup) jobInfoGroup.style.display = 'block';
+            }
+            
+            // 最新消息和找內部專家不顯示檔案上傳
+            if (contentType === 'news' || contentType === 'expert') {
+                if (fileUploadGroup) fileUploadGroup.style.display = 'none';
+            } else {
+                if (fileUploadGroup) fileUploadGroup.style.display = 'block';
+            }
+        }
+
+        if (contentTypeSelect) {
+            contentTypeSelect.addEventListener('change', toggleFormFields);
         }
 
         // 檔案預覽功能
