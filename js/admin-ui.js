@@ -317,7 +317,7 @@ async function renderFormFields() {
                     <strong>${typeLabels[type]}</strong>
                     <span>(${sortedFields.length} 個欄位)</span>
                 </div>
-                <div class="content-type-fields" id="fields_${type}">
+                <div class="content-type-fields" id="fields_${type}" style="display: none;">
                     ${sortedFields.map(field => `
                         <div class="field-item">
                             <div class="field-info">
