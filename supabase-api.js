@@ -504,14 +504,43 @@ async function addUserPoints(authorName, points = 1) {
             return { success: true, points: users[authorName].points };
         }
 
-        // 檢查用戶是否存在
-        const { data: existingUser, error: checkError } = await client
+        // 優先使用登入用戶的 username
+        let targetUsername = null;
+        if (typeof Auth !== 'undefined' && Auth.isLoggedIn()) {
+            const currentUser = Auth.getCurrentUser();
+            if (currentUser && currentUser.username) {
+                targetUsername = currentUser.username;
+            }
+        }
+
+        // 如果沒有登入用戶，使用傳入的參數
+        if (!targetUsername) {
+            targetUsername = authorName;
+        }
+
+        // 先嘗試用 username 查詢（新系統）
+        let { data: existingUser, error: checkError } = await client
             .from('users')
             .select('*')
-            .eq('name', authorName)
+            .eq('username', targetUsername)
             .single();
 
-        if (checkError && checkError.code !== 'PGRST116') { // PGRST116 表示找不到記錄
+        // 如果找不到，嘗試用 name 查詢（舊系統兼容）
+        if (checkError && checkError.code === 'PGRST116') {
+            const { data: nameUser, error: nameError } = await client
+                .from('users')
+                .select('*')
+                .eq('name', authorName)
+                .single();
+            
+            if (!nameError && nameUser) {
+                existingUser = nameUser;
+                checkError = null;
+                targetUsername = nameUser.username || authorName;
+            }
+        }
+
+        if (checkError && checkError.code !== 'PGRST116') {
             throw checkError;
         }
 
@@ -521,7 +550,7 @@ async function addUserPoints(authorName, points = 1) {
             const { data, error } = await client
                 .from('users')
                 .update({ points: newPoints })
-                .eq('name', authorName)
+                .eq('id', existingUser.id)
                 .select()
                 .single();
 
@@ -536,23 +565,18 @@ async function addUserPoints(authorName, points = 1) {
 
             return { success: true, points: newPoints };
         } else {
-            // 建立新用戶
-            const { data, error } = await client
-                .from('users')
-                .insert([{ name: authorName, points: points }])
-                .select()
-                .single();
-
-            if (error) {
-                throw error;
-            }
-
-            // 更新 localStorage
+            // 如果用戶不存在，嘗試建立（但需要更多資訊）
+            // 這裡只更新積分，不建立新用戶（應該通過註冊建立）
+            console.warn('用戶不存在，無法增加積分。請先註冊帳號。');
+            
+            // 使用 localStorage 作為備援
             const users = JSON.parse(localStorage.getItem('users') || '{}');
-            users[authorName] = { name: authorName, points: points };
+            if (!users[authorName]) {
+                users[authorName] = { name: authorName, points: 0 };
+            }
+            users[authorName].points = (users[authorName].points || 0) + points;
             localStorage.setItem('users', JSON.stringify(users));
-
-            return { success: true, points: points };
+            return { success: true, points: users[authorName].points, fallback: true };
         }
     } catch (error) {
         console.error('增加用戶積分失敗:', error);
