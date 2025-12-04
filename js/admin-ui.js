@@ -556,7 +556,7 @@ function renderTemplatesList() {
 // 顯示新增模板 Modal
 function showAddTemplateModal() {
     editingTemplateId = null;
-    document.getElementById('templateModalTitle').textContent = '新增欄位模板';
+    document.getElementById('templateModalTitle').textContent = '新增模板名稱';
     document.getElementById('templateForm').reset();
     document.getElementById('templateId').value = '';
     document.getElementById('templateOptionsGroup').style.display = 'none';
@@ -569,7 +569,7 @@ function editTemplate(id) {
     if (!template) return;
     
     editingTemplateId = id;
-    document.getElementById('templateModalTitle').textContent = '編輯欄位模板';
+    document.getElementById('templateModalTitle').textContent = '編輯模板名稱';
     document.getElementById('templateId').value = template.id;
     document.getElementById('templateName').value = template.name;
     document.getElementById('templateFieldKey').value = template.fieldKey;
