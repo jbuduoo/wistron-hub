@@ -1598,7 +1598,7 @@ body {
 
     .container {
         flex-direction: column;
-        padding: 1rem;
+        padding: 0rem;
     }
 
     .sidebar {
