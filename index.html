@@ -118,7 +118,82 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase-config.js?v=2"></script>
     <script src="supabase-api.js?v=2"></script>
+    <script src="auth.js"></script>
     <script src="script.js?v=2"></script>
+    <script>
+        // 檢查登入狀態並更新 header
+        function updateHeaderForAuth() {
+            const isLoggedIn = Auth.isLoggedIn();
+            const loginBtn = document.getElementById('loginBtn');
+            const loggedInSection = document.getElementById('loggedInSection');
+            
+            if (isLoggedIn) {
+                if (loginBtn) loginBtn.style.display = 'none';
+                if (loggedInSection) loggedInSection.style.display = 'flex';
+                
+                const user = Auth.getCurrentUser();
+                if (user) {
+                    // 更新頭像
+                    const avatarImg = document.getElementById('avatarImg');
+                    const avatarInitial = document.getElementById('avatarInitial');
+                    const menuAvatarInitial = document.getElementById('menuAvatarInitial');
+                    
+                    if (avatarImg && avatarInitial) {
+                        if (user.avatar) {
+                            avatarImg.src = user.avatar;
+                            avatarImg.style.display = 'block';
+                            avatarInitial.style.display = 'none';
+                        } else {
+                            avatarInitial.textContent = user.name ? user.name.charAt(0) : '👤';
+                        }
+                    }
+                    
+                    if (menuAvatarInitial) {
+                        menuAvatarInitial.textContent = user.name ? user.name.charAt(0) : '👤';
+                    }
+                    
+                    // 更新選單資訊
+                    const menuUserName = document.getElementById('menuUserName');
+                    const menuUserUsername = document.getElementById('menuUserUsername');
+                    if (menuUserName) menuUserName.textContent = user.name || user.username;
+                    if (menuUserUsername) menuUserUsername.textContent = '@' + user.username;
+                }
+                
+                // 載入用戶積分
+                if (typeof loadUserPoints !== 'undefined') {
+                    loadUserPoints();
+                }
+            } else {
+                if (loginBtn) loginBtn.style.display = 'block';
+                if (loggedInSection) loggedInSection.style.display = 'none';
+            }
+        }
+        
+        function showUserMenu() {
+            const menu = document.getElementById('userMenu');
+            if (menu) {
+                menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+            }
+        }
+        
+        function logout() {
+            Auth.logout();
+        }
+        
+        // 點擊外部關閉選單
+        document.addEventListener('click', function(e) {
+            const menu = document.getElementById('userMenu');
+            const avatar = document.getElementById('userAvatar');
+            if (menu && avatar && !menu.contains(e.target) && !avatar.contains(e.target)) {
+                menu.style.display = 'none';
+            }
+        });
+        
+        // 頁面載入時更新 header
+        document.addEventListener('DOMContentLoaded', function() {
+            updateHeaderForAuth();
+        });
+    </script>
 </body>
 </html>
 
