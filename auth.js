@@ -40,9 +40,30 @@ const Auth = {
                 id: user.id,
                 username: user.username,
                 name: user.name,
-                avatar: user.avatar || null
+                avatar: user.avatar || null,
+                role: user.role || (user.username === 'admin' ? 'admin' : 'user')
             }));
             return { success: true, user: user };
+        }
+        
+        // 特殊處理：admin 帳號（如果 Supabase 和 localStorage 都沒有）
+        if (username === 'admin' && password === '1234') {
+            const adminUser = {
+                id: 'admin',
+                username: 'admin',
+                name: '系統管理員',
+                avatar: null,
+                role: 'admin',
+                points: 0
+            };
+            localStorage.setItem('currentUser', JSON.stringify({
+                id: adminUser.id,
+                username: adminUser.username,
+                name: adminUser.name,
+                avatar: adminUser.avatar,
+                role: adminUser.role
+            }));
+            return { success: true, user: adminUser };
         }
         return { success: false, message: '帳號或密碼錯誤' };
     },
@@ -144,7 +165,8 @@ const Auth = {
                 id: users[userIndex].id,
                 username: users[userIndex].username,
                 name: users[userIndex].name,
-                avatar: users[userIndex].avatar
+                avatar: users[userIndex].avatar,
+                role: users[userIndex].role || (users[userIndex].username === 'admin' ? 'admin' : 'user')
             }));
             return true;
         }
